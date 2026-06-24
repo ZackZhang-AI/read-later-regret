@@ -67,3 +67,6 @@ export async function clearDiscarded(): Promise<void> {
   await setLinks(links.filter((link) => link.status !== "discarded"))
 }
 
+export async function replaceLinks(links: SavedLink[]): Promise<void> {
+  await setLinks(links)
+}

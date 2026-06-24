@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest"
 
 import { analyzePage } from "./analyze"
+import { classifyPage } from "./classifier"
 import { scoreInformationDebt } from "./debt-score"
 import { actionToStatus, recommendAction } from "./recommendation"
 
@@ -100,6 +101,27 @@ describe("recommendAction", () => {
   })
 })
 
+describe("classifyPage", () => {
+  it("returns stronger confidence for high-signal pages than unknown pages", () => {
+    const video = classifyPage({
+      url: "https://www.youtube.com/watch?v=abc",
+      title: "Watch this",
+      text: "Video"
+    })
+    const unknown = classifyPage({
+      url: "https://example.com/blank",
+      title: "",
+      text: ""
+    })
+
+    expect(video.confidence).toBeGreaterThan(unknown.confidence)
+    expect(video.reasons[0]).toMatchObject({
+      reasonCode: "video_signal",
+      weight: 40
+    })
+  })
+})
+
 describe("scoreInformationDebt", () => {
   it("returns zero for discarded links", () => {
     expect(
@@ -127,4 +149,3 @@ describe("scoreInformationDebt", () => {
     expect(result.reasons.length).toBeGreaterThan(3)
   })
 })
-

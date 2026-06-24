@@ -5,7 +5,7 @@ import "./styles.css"
 import { analyzePage } from "./core/analyze"
 import { createSavedLink } from "./core/create-link"
 import { saveLink } from "./storage/links"
-import type { AnalysisResult, LinkAction, PagePayload } from "./types/link"
+import type { AnalysisResult, LinkAction, LinkType, PagePayload } from "./types/link"
 
 const actions: LinkAction[] = [
   "Read Now",
@@ -14,6 +14,18 @@ const actions: LinkAction[] = [
   "Turn into Task",
   "Add to Toolbox",
   "Discard"
+]
+
+const linkTypes: LinkType[] = [
+  "Long Article",
+  "Short Article",
+  "Tool",
+  "Docs",
+  "Video",
+  "Shopping",
+  "News",
+  "Paper",
+  "Unknown"
 ]
 
 type LoadState =
@@ -46,6 +58,9 @@ function App() {
   const [state, setState] = useState<LoadState>({ status: "loading" })
   const [savingAction, setSavingAction] = useState<LinkAction | null>(null)
   const [notice, setNotice] = useState("")
+  const [correctedType, setCorrectedType] = useState<LinkType | "">("")
+  const [note, setNote] = useState("")
+  const [tagsInput, setTagsInput] = useState("")
 
   useEffect(() => {
     extractCurrentPage()
@@ -60,14 +75,32 @@ function App() {
 
   const analysis: AnalysisResult | null = useMemo(() => {
     if (state.status !== "ready") return null
-    return analyzePage(state.page)
-  }, [state])
+    return analyzePage(state.page, {
+      userCorrectedType: correctedType || undefined
+    })
+  }, [correctedType, state])
+
+  useEffect(() => {
+    if (!analysis || note) return
+
+    if (analysis.type === "Tool") {
+      setNote(`Use this when I need ${state.status === "ready" ? state.page.title : "this tool"}.`)
+    }
+  }, [analysis, note, state])
 
   async function handleAction(action: LinkAction) {
     if (state.status !== "ready") return
 
     setSavingAction(action)
-    const link = createSavedLink(state.page, action)
+    const tags = tagsInput
+      .split(",")
+      .map((tag) => tag.trim())
+      .filter(Boolean)
+    const link = createSavedLink(state.page, action, {
+      note: note.trim() || undefined,
+      tags,
+      userCorrectedType: correctedType || undefined
+    })
     await saveLink(link)
     setSavingAction(null)
 
@@ -115,6 +148,10 @@ function App() {
               <strong>{analysis.readingTimeMinutes} min</strong>
             </div>
             <div>
+              <span>Confidence</span>
+              <strong>{analysis.confidence}%</strong>
+            </div>
+            <div>
               <span>Debt score</span>
               <strong>
                 {analysis.debtScore}/100 <small>{scoreLabel(analysis.debtScore)}</small>
@@ -122,14 +159,50 @@ function App() {
             </div>
           </div>
 
+          {state.page.extractionQuality === "low" && (
+            <p className="warning-box">This page was hard to read. The judgment may be fuzzy.</p>
+          )}
+
           <div className="recommendation">
             <span>Suggested</span>
             <strong>{analysis.suggestedAction}</strong>
           </div>
 
+          <label className="field-label">
+            Correct type if needed
+            <select
+              value={correctedType || analysis.type}
+              onChange={(event) => setCorrectedType(event.target.value as LinkType)}>
+              {linkTypes.map((type) => (
+                <option key={type} value={type}>
+                  {type}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="field-label">
+            Use note
+            <textarea
+              onChange={(event) => setNote(event.target.value)}
+              placeholder="One sentence about why this link matters"
+              rows={2}
+              value={note}
+            />
+          </label>
+
+          <label className="field-label">
+            Tags
+            <input
+              onChange={(event) => setTagsInput(event.target.value)}
+              placeholder="ai, tools, research"
+              value={tagsInput}
+            />
+          </label>
+
           <ul className="reason-list">
             {analysis.reasons.slice(0, 4).map((reason) => (
-              <li key={reason}>{reason}</li>
+              <li key={reason.reasonCode}>{reason.message}</li>
             ))}
           </ul>
 
@@ -154,4 +227,3 @@ function App() {
 }
 
 export default App
-

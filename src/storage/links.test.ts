@@ -17,7 +17,13 @@ const sampleLink: SavedLink = {
   chosenAction: "Read Now",
   status: "inbox",
   debtScore: 10,
-  reasons: ["Short enough to read now."],
+  reasons: [
+    {
+      reasonCode: "short_reading_time",
+      message: "Short enough to read now.",
+      weight: 10
+    }
+  ],
   tags: []
 }
 
@@ -82,4 +88,3 @@ describe("links storage", () => {
     expect(await getLinks()).toEqual([sampleLink])
   })
 })
-

@@ -1,4 +1,4 @@
-import type { AnalysisResult, PagePayload } from "../types/link"
+import type { AnalysisResult, LinkType, PagePayload } from "../types/link"
 
 import { classifyPage } from "./classifier"
 import { scoreInformationDebt } from "./debt-score"
@@ -8,11 +8,13 @@ import { recommendAction } from "./recommendation"
 export interface AnalyzeOptions {
   existingSameTypeOpenCount?: number
   ageDays?: number
+  userCorrectedType?: LinkType
 }
 
 export function analyzePage(page: PagePayload, options: AnalyzeOptions = {}): AnalysisResult {
   const readingTime = estimateReadingTime(page.text)
-  const type = classifyPage(page)
+  const classification = classifyPage(page)
+  const type = options.userCorrectedType ?? classification.type
   const recommendation = recommendAction({
     type,
     readingTimeMinutes: readingTime.minutes,
@@ -28,10 +30,22 @@ export function analyzePage(page: PagePayload, options: AnalyzeOptions = {}): An
 
   return {
     type,
+    confidence: classification.confidence,
     readingTimeMinutes: readingTime.minutes,
     suggestedAction: recommendation.action,
     debtScore: debt.score,
-    reasons: [...recommendation.reasons, ...debt.reasons]
+    reasons: [
+      ...classification.reasons,
+      ...recommendation.reasons.map((message, index) => ({
+        reasonCode: `recommendation_${index + 1}`,
+        message,
+        weight: 20
+      })),
+      ...debt.reasons.map((message, index) => ({
+        reasonCode: `debt_${index + 1}`,
+        message,
+        weight: 10
+      }))
+    ]
   }
 }
-
