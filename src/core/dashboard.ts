@@ -1,5 +1,7 @@
 import type { LinkStatus, SavedLink } from "../types/link"
 
+import { sanitizeSettings, type PartialUserSettings } from "./settings"
+
 export type DashboardSort = "debt" | "created" | "readingTime"
 
 export interface WeeklyCleanupStats {
@@ -77,7 +79,8 @@ export function applyBatchStatus(
 
 export function getWeeklyCleanupStats(
   links: SavedLink[],
-  now: Date = new Date()
+  now: Date = new Date(),
+  settings: PartialUserSettings = {}
 ): WeeklyCleanupStats {
   const weekStart = new Date(now)
   weekStart.setDate(now.getDate() - 7)
@@ -92,16 +95,18 @@ export function getWeeklyCleanupStats(
         link.debtScore >= 50 &&
         link.status !== "discarded"
     ).length,
-    probablyNotImportant: getProbablyNotImportantLinks(links, now).length
+    probablyNotImportant: getProbablyNotImportantLinks(links, now, settings).length
   }
 }
 
 export function getProbablyNotImportantLinks(
   links: SavedLink[],
-  now: Date = new Date()
+  now: Date = new Date(),
+  settings: PartialUserSettings = {}
 ): SavedLink[] {
+  const dashboardSettings = sanitizeSettings(settings)
   const staleCutoff = new Date(now)
-  staleCutoff.setDate(now.getDate() - 30)
+  staleCutoff.setDate(now.getDate() - dashboardSettings.staleLinkDays)
 
   return links.filter(
     (link) =>

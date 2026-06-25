@@ -19,6 +19,23 @@ describe("analyzePage", () => {
     expect(result.debtScore).toBeGreaterThanOrEqual(60)
   })
 
+  it("uses custom long article threshold during analysis", () => {
+    const result = analyzePage(
+      {
+        url: "https://example.com/five-minute-read",
+        title: "A focused article",
+        text: Array.from({ length: 1100 }, (_, index) => `word${index}`).join(" ")
+      },
+      {
+        settings: {
+          longArticleMinutes: 5
+        }
+      }
+    )
+
+    expect(result.type).toBe("Long Article")
+  })
+
   it("classifies quick articles and recommends reading now", () => {
     const result = analyzePage({
       url: "https://example.com/post",

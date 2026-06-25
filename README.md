@@ -36,6 +36,7 @@ The product voice is lightweight and a little candid: you are not short on conte
 - Dashboard search, sort, filtering, batch actions, tags, notes, and weekly cleanup stats.
 - Dashboard "Probably Not Important" view for old unresolved links.
 - JSON export/import for local backups and demos, with URL dedupe on import.
+- User preferences for reading speed, long-article threshold, and stale-link age.
 - Development-only demo seed data from the dashboard empty state.
 - No AI API required.
 
@@ -45,6 +46,7 @@ The product voice is lightweight and a little candid: you are not short on conte
 - `src/contents/extract.ts`: content script for readable text and extraction metadata.
 - `src/tabs/dashboard.tsx`: dashboard management UI.
 - `src/core/`: pure rule, extraction, analysis, dashboard, import/export, and demo-data helpers.
+- `src/storage/settings.ts`: local settings persistence for user decision preferences.
 - `src/storage/links.ts`: local storage wrapper.
 - `src/types/link.ts`: shared data model.
 - `agent.md`: durable agent brief for future implementation sessions.
@@ -106,6 +108,7 @@ npm.cmd run build
 - Save several links, then use dashboard search, sort, filter, batch discard, batch done, and batch summarize.
 - Export saved links, then import the JSON and confirm URL dedupe keeps one record per URL.
 - Click the "Probably not important" cleanup stat after seeding or importing old links.
+- Change decision preferences in the dashboard and confirm long-article/stale-link behavior updates.
 - Edit tags and notes in the dashboard.
 - Test a hard-to-read page and confirm low extraction quality warning appears.
 

@@ -16,6 +16,7 @@ Build a Plasmo + React + TypeScript extension with:
 - Local persistence through `chrome.storage.local`.
 - Dashboard page for reviewing, searching, sorting, batch-managing, and annotating saved links.
 - JSON import/export for backups and demos.
+- User preferences for reading speed, long-article threshold, and stale-link age.
 - Lightweight UI voice: an information decluttering assistant with a little dry humor.
 
 ## Core User Flow
@@ -29,6 +30,7 @@ Build a Plasmo + React + TypeScript extension with:
 7. Extension saves the link locally with a derived status.
 8. User opens dashboard to filter, search, sort, batch update, annotate, open, delete, or clear links.
 9. User can export local links to JSON and import them back with URL dedupe.
+10. User can tune decision preferences from the dashboard.
 
 ## Page Types
 
@@ -77,7 +79,9 @@ Build a Plasmo + React + TypeScript extension with:
 - `src/core/dashboard.ts`: search, sort, batch update, and weekly cleanup helpers.
 - `src/core/demo-data.ts`: development seed links.
 - `src/core/import-export.ts`: versioned JSON export/import parsing and dedupe helpers.
+- `src/core/settings.ts`: default and sanitized user decision preferences.
 - `src/storage/links.ts`: `chrome.storage.local` wrapper.
+- `src/storage/settings.ts`: `chrome.storage.local` wrapper for preferences.
 - `src/styles.css`: shared extension UI styling.
 
 ## Rule Defaults
@@ -138,6 +142,14 @@ Dashboard:
 - Probably Not Important means unresolved links older than 30 days.
 - Import/export uses schema version `1` and deduplicates imported links by URL while preserving existing local identity.
 
+Settings:
+
+- Settings are stored locally under `readLaterRegretSettings`.
+- `englishWordsPerMinute` and `cjkCharactersPerMinute` affect reading-time estimates.
+- `longArticleMinutes` affects long-vs-short article classification.
+- `staleLinkDays` affects Probably Not Important cleanup.
+- Settings are sanitized to safe ranges before storage or analysis.
+
 ## Execution Plan
 
 1. Initialize Plasmo project files and package scripts.
@@ -162,6 +174,7 @@ Dashboard:
 - Dashboard can show, filter, update, delete, and clear records.
 - Dashboard can search, sort, batch update, and edit notes/tags.
 - Dashboard can export/import JSON and surface old unresolved links.
+- Dashboard can tune decision preferences and popup analysis uses the same settings.
 - Popup can warn when extraction quality is low.
 - Popup can save corrected type, confidence, extraction quality, note, and tags.
 - No AI API is required.

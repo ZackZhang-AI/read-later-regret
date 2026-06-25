@@ -1,5 +1,4 @@
-const ENGLISH_WORDS_PER_MINUTE = 220
-const CJK_CHARACTERS_PER_MINUTE = 450
+import { sanitizeSettings, type PartialUserSettings } from "./settings"
 
 export interface ReadingTimeEstimate {
   minutes: number
@@ -7,7 +6,11 @@ export interface ReadingTimeEstimate {
   cjkCharacterCount: number
 }
 
-export function estimateReadingTime(text: string): ReadingTimeEstimate {
+export function estimateReadingTime(
+  text: string,
+  settings: PartialUserSettings = {}
+): ReadingTimeEstimate {
+  const readingSettings = sanitizeSettings(settings)
   const trimmed = text.trim()
 
   if (!trimmed) {
@@ -23,8 +26,8 @@ export function estimateReadingTime(text: string): ReadingTimeEstimate {
   const latinText = trimmed.replace(/[\u3400-\u9fff]/g, " ")
   const words = latinText.match(/[A-Za-z0-9]+(?:['-][A-Za-z0-9]+)?/g) ?? []
   const wordCount = words.length
-  const englishMinutes = wordCount / ENGLISH_WORDS_PER_MINUTE
-  const cjkMinutes = cjkCharacterCount / CJK_CHARACTERS_PER_MINUTE
+  const englishMinutes = wordCount / readingSettings.englishWordsPerMinute
+  const cjkMinutes = cjkCharacterCount / readingSettings.cjkCharactersPerMinute
   const minutes = Math.max(1, Math.ceil(Math.max(englishMinutes, cjkMinutes)))
 
   return {
@@ -33,4 +36,3 @@ export function estimateReadingTime(text: string): ReadingTimeEstimate {
     cjkCharacterCount
   }
 }
-

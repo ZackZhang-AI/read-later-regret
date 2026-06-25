@@ -82,6 +82,7 @@ h2 {
 .link-row,
 .stats-grid > div,
 .cleanup-panel,
+.preferences-panel,
 .toolbar {
   background: #fffdf8;
   border: 1px solid #e7decd;
@@ -109,6 +110,22 @@ h2 {
 .cleanup-panel {
   display: grid;
   gap: 10px;
+}
+
+.preferences-panel {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-bottom: 16px;
+  padding: 12px;
+}
+
+.preferences-panel label {
+  color: #5f5648;
+  display: grid;
+  font-size: 12px;
+  font-weight: 700;
+  gap: 5px;
 }
 
 .metric-grid {
@@ -367,6 +384,7 @@ textarea {
   .stats-grid,
   .metric-grid,
   .cleanup-panel,
+  .preferences-panel,
   .toolbar,
   .inline-edit-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));

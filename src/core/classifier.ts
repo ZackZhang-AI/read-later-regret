@@ -1,6 +1,7 @@
 import type { AnalysisReason, LinkType, PagePayload } from "../types/link"
 
 import { estimateReadingTime } from "./reading-time"
+import { sanitizeSettings, type PartialUserSettings } from "./settings"
 
 function includesAny(value: string, needles: string[]): boolean {
   return needles.some((needle) => value.includes(needle))
@@ -28,12 +29,16 @@ function result(type: LinkType, confidence: number, reasons: AnalysisReason[]): 
   }
 }
 
-export function classifyPage(page: PagePayload): ClassificationResult {
+export function classifyPage(
+  page: PagePayload,
+  settings: PartialUserSettings = {}
+): ClassificationResult {
+  const classificationSettings = sanitizeSettings(settings)
   const url = page.url.toLowerCase()
   const title = page.title.toLowerCase()
   const text = page.text.toLowerCase()
   const combined = `${url} ${title} ${text}`
-  const readingTime = estimateReadingTime(page.text)
+  const readingTime = estimateReadingTime(page.text, classificationSettings)
 
   if (
     page.hasVideo ||
@@ -93,7 +98,7 @@ export function classifyPage(page: PagePayload): ClassificationResult {
     return result("Unknown", 20, [reason("empty_text", "There was not enough readable text.", 10)])
   }
 
-  if (readingTime.minutes >= 8) {
+  if (readingTime.minutes >= classificationSettings.longArticleMinutes) {
     return result("Long Article", 72, [
       reason("long_reading_time", "Reading time is long enough to require scheduling.", 28)
     ])

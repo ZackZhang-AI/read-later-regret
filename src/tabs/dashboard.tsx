@@ -12,7 +12,9 @@ import {
 } from "../core/dashboard"
 import { createDemoLinks } from "../core/demo-data"
 import { createExportPayload, parseImportPayload } from "../core/import-export"
+import { DEFAULT_SETTINGS, sanitizeSettings, type UserSettings } from "../core/settings"
 import { clearDiscarded, deleteLink, getLinks, replaceLinks, saveLink, updateLink } from "../storage/links"
+import { getSettings, saveSettings } from "../storage/settings"
 import type { LinkStatus, SavedLink } from "../types/link"
 
 const filters: Array<LinkStatus | "all"> = [
@@ -54,6 +56,8 @@ function Dashboard() {
   const [sort, setSort] = useState<DashboardSort>("debt")
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [notice, setNotice] = useState("")
+  const [settings, setSettings] = useState<UserSettings>(DEFAULT_SETTINGS)
+  const [settingsDraft, setSettingsDraft] = useState<UserSettings>(DEFAULT_SETTINGS)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
 
   async function refreshLinks() {
@@ -62,10 +66,14 @@ function Dashboard() {
 
   useEffect(() => {
     refreshLinks()
+    getSettings().then((storedSettings) => {
+      setSettings(storedSettings)
+      setSettingsDraft(storedSettings)
+    })
   }, [])
 
   const visibleLinks = useMemo(() => {
-    const probablyNotImportantLinks = getProbablyNotImportantLinks(links)
+    const probablyNotImportantLinks = getProbablyNotImportantLinks(links, new Date(), settings)
     const statusFilteredLinks =
       filter === "all"
         ? links
@@ -73,7 +81,7 @@ function Dashboard() {
           ? probablyNotImportantLinks
           : links.filter((link) => link.status === filter)
     return sortLinks(filterLinks(statusFilteredLinks, query), sort)
-  }, [filter, links, query, sort])
+  }, [filter, links, query, settings, sort])
 
   const stats = useMemo(() => {
     return {
@@ -83,7 +91,7 @@ function Dashboard() {
       thisWeek: links.filter((link) => link.status === "reading_this_week").length
     }
   }, [links])
-  const weeklyStats = useMemo(() => getWeeklyCleanupStats(links), [links])
+  const weeklyStats = useMemo(() => getWeeklyCleanupStats(links, new Date(), settings), [links, settings])
 
   async function setStatus(id: string, status: LinkStatus) {
     await updateLink(id, { status })
@@ -166,6 +174,24 @@ function Dashboard() {
     await refreshLinks()
   }
 
+  async function updateSettings(patch: Partial<UserSettings>) {
+    const nextSettings = sanitizeSettings({
+      ...settingsDraft,
+      ...patch
+    })
+
+    setSettings(await saveSettings(nextSettings))
+    setSettingsDraft(nextSettings)
+    setNotice("Preferences saved. The queue has been recalibrated.")
+  }
+
+  function updateSettingsDraft(patch: Partial<UserSettings>) {
+    setSettingsDraft((currentSettings) => ({
+      ...currentSettings,
+      ...patch
+    }))
+  }
+
   return (
     <main className="dashboard-shell">
       <header className="dashboard-header">
@@ -222,6 +248,53 @@ function Dashboard() {
           <span>Probably not important</span>
           <strong>{weeklyStats.probablyNotImportant}</strong>
         </button>
+      </section>
+
+      <section className="preferences-panel" aria-label="Decision preferences">
+        <label>
+          English WPM
+          <input
+            min={120}
+            max={450}
+            onBlur={(event) => updateSettings({ englishWordsPerMinute: Number(event.target.value) })}
+            onChange={(event) => updateSettingsDraft({ englishWordsPerMinute: Number(event.target.value) })}
+            type="number"
+            value={settingsDraft.englishWordsPerMinute}
+          />
+        </label>
+        <label>
+          CJK chars/min
+          <input
+            min={200}
+            max={900}
+            onBlur={(event) => updateSettings({ cjkCharactersPerMinute: Number(event.target.value) })}
+            onChange={(event) => updateSettingsDraft({ cjkCharactersPerMinute: Number(event.target.value) })}
+            type="number"
+            value={settingsDraft.cjkCharactersPerMinute}
+          />
+        </label>
+        <label>
+          Long article at
+          <input
+            min={3}
+            max={30}
+            onBlur={(event) => updateSettings({ longArticleMinutes: Number(event.target.value) })}
+            onChange={(event) => updateSettingsDraft({ longArticleMinutes: Number(event.target.value) })}
+            type="number"
+            value={settingsDraft.longArticleMinutes}
+          />
+        </label>
+        <label>
+          Stale after days
+          <input
+            min={7}
+            max={180}
+            onBlur={(event) => updateSettings({ staleLinkDays: Number(event.target.value) })}
+            onChange={(event) => updateSettingsDraft({ staleLinkDays: Number(event.target.value) })}
+            type="number"
+            value={settingsDraft.staleLinkDays}
+          />
+        </label>
       </section>
 
       <nav className="filter-row" aria-label="Link filters">

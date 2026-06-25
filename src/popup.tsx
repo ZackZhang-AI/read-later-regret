@@ -4,7 +4,9 @@ import "./styles.css"
 
 import { analyzePage } from "./core/analyze"
 import { createSavedLink } from "./core/create-link"
+import { DEFAULT_SETTINGS, type UserSettings } from "./core/settings"
 import { saveLink } from "./storage/links"
+import { getSettings } from "./storage/settings"
 import type { AnalysisResult, LinkAction, LinkType, PagePayload } from "./types/link"
 
 const actions: LinkAction[] = [
@@ -61,10 +63,14 @@ function App() {
   const [correctedType, setCorrectedType] = useState<LinkType | "">("")
   const [note, setNote] = useState("")
   const [tagsInput, setTagsInput] = useState("")
+  const [settings, setSettings] = useState<UserSettings>(DEFAULT_SETTINGS)
 
   useEffect(() => {
-    extractCurrentPage()
-      .then((page) => setState({ status: "ready", page }))
+    Promise.all([extractCurrentPage(), getSettings()])
+      .then(([page, storedSettings]) => {
+        setSettings(storedSettings)
+        setState({ status: "ready", page })
+      })
       .catch(() =>
         setState({
           status: "error",
@@ -76,9 +82,10 @@ function App() {
   const analysis: AnalysisResult | null = useMemo(() => {
     if (state.status !== "ready") return null
     return analyzePage(state.page, {
-      userCorrectedType: correctedType || undefined
+      userCorrectedType: correctedType || undefined,
+      settings
     })
-  }, [correctedType, state])
+  }, [correctedType, settings, state])
 
   useEffect(() => {
     if (!analysis || note) return
@@ -99,7 +106,8 @@ function App() {
     const link = createSavedLink(state.page, action, {
       note: note.trim() || undefined,
       tags,
-      userCorrectedType: correctedType || undefined
+      userCorrectedType: correctedType || undefined,
+      settings
     })
     await saveLink(link)
     setSavingAction(null)

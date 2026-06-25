@@ -2,11 +2,13 @@ import type { LinkAction, LinkType, PagePayload, SavedLink } from "../types/link
 
 import { analyzePage } from "./analyze"
 import { actionToStatus } from "./recommendation"
+import type { PartialUserSettings } from "./settings"
 
 export interface CreateSavedLinkOptions {
   note?: string
   tags?: string[]
   userCorrectedType?: LinkType
+  settings?: PartialUserSettings
 }
 
 export function createSavedLink(
@@ -15,7 +17,8 @@ export function createSavedLink(
   options: CreateSavedLinkOptions = {}
 ): SavedLink {
   const analysis = analyzePage(page, {
-    userCorrectedType: options.userCorrectedType
+    userCorrectedType: options.userCorrectedType,
+    settings: options.settings
   })
   const now = new Date().toISOString()
 

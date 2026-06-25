@@ -100,4 +100,12 @@ describe("dashboard helpers", () => {
       )
     ).toEqual(["old-news"])
   })
+
+  it("uses custom stale-day settings for probably-not-important links", () => {
+    expect(
+      getProbablyNotImportantLinks(links, new Date("2026-06-24T00:00:00.000Z"), {
+        staleLinkDays: 10
+      }).map((link) => link.id)
+    ).toEqual(["old-news"])
+  })
 })
