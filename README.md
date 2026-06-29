@@ -38,6 +38,7 @@ The product voice is lightweight and a little candid: you are not short on conte
 - Dashboard Review Mode for clearing one link at a time.
 - Topic Groups that cluster related links and suggest reading only the best few.
 - Link issue badges for high debt, low confidence, and hard-to-read pages.
+- Demo readiness checks for content coverage, workflow coverage, Review Mode, Topic Groups, and issue badges.
 - Dashboard "Probably Not Important" view for old unresolved links.
 - JSON export/import for local backups and demos, with URL dedupe on import.
 - User preferences for reading speed, long-article threshold, and stale-link age.
@@ -52,6 +53,7 @@ The product voice is lightweight and a little candid: you are not short on conte
 - `src/core/`: pure rule, extraction, analysis, dashboard, import/export, and demo-data helpers.
 - `src/core/review.ts`: Review Mode queue, decision mapping, and session summary helpers.
 - `src/core/topics.ts`: local topic clustering and read/summarize/discard suggestions.
+- `src/core/demo-readiness.ts`: showcase coverage checks for demo and screenshot readiness.
 - `src/storage/settings.ts`: local settings persistence for user decision preferences.
 - `src/storage/links.ts`: local storage wrapper.
 - `src/types/link.ts`: shared data model.
@@ -104,6 +106,18 @@ Run production build:
 npm.cmd run build
 ```
 
+Run the full verification suite:
+
+```bash
+npm.cmd run verify
+```
+
+Prepare a walkthrough:
+
+```bash
+docs/demo-checklist.md
+```
+
 ## Manual Demo Checklist
 
 - Open a long article and confirm it recommends scheduled reading.
@@ -112,6 +126,7 @@ npm.cmd run build
 - Open docs and confirm it can become a task.
 - Open a video, shopping page, paper, and news page to verify type classification.
 - Save several links, then use dashboard search, sort, filter, batch discard, batch done, and batch summarize.
+- Click "Add demo links" and confirm the Demo readiness checks are green.
 - Start Review Mode and process links one by one with keep, summarize, task, later, and discard decisions.
 - Use Topic Groups to read the strongest 1-2 links and summarize or discard the rest.
 - Save a link from the popup, then try undo and open dashboard.

@@ -11,6 +11,7 @@ import {
   type DashboardSort
 } from "../core/dashboard"
 import { createDemoLinks } from "../core/demo-data"
+import { getDemoReadiness } from "../core/demo-readiness"
 import { createExportPayload, parseImportPayload } from "../core/import-export"
 import {
   applyReviewDecision,
@@ -110,6 +111,7 @@ function Dashboard() {
   const currentReviewLink = reviewQueue[0]
   const reviewSummary = useMemo(() => createReviewSummary(reviewEvents), [reviewEvents])
   const topicClusters = useMemo(() => getTopicClusters(links).slice(0, 4), [links])
+  const demoReadiness = useMemo(() => getDemoReadiness(links), [links])
 
   async function setStatus(id: string, status: LinkStatus) {
     await updateLink(id, { status })
@@ -278,6 +280,28 @@ function Dashboard() {
         <div>
           <span>Discarded</span>
           <strong>{stats.discarded}</strong>
+        </div>
+      </section>
+
+      <section className="readiness-panel">
+        <div className="readiness-panel-header">
+          <div>
+            <p className="eyebrow">Demo readiness</p>
+            <h2>{demoReadiness.ready ? "Ready for a clean walkthrough." : "Needs more demo material."}</h2>
+          </div>
+          {process.env.NODE_ENV !== "production" && (
+            <button className="secondary-button" onClick={seedDemoData} type="button">
+              Add demo links
+            </button>
+          )}
+        </div>
+        <div className="readiness-grid">
+          {demoReadiness.checks.map((check) => (
+            <div className={check.passed ? "readiness-check readiness-pass" : "readiness-check"} key={check.id}>
+              <strong>{check.label}</strong>
+              <span>{check.detail}</span>
+            </div>
+          ))}
         </div>
       </section>
 

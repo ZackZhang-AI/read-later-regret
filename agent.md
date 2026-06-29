@@ -20,6 +20,7 @@ Build a Plasmo + React + TypeScript extension with:
 - Topic Groups for local clustering by title, tags, host, and keywords.
 - JSON import/export for backups and demos.
 - User preferences for reading speed, long-article threshold, and stale-link age.
+- Demo readiness checks and a walkthrough checklist for screenshots, portfolio review, and local handoff.
 - Lightweight UI voice: an information decluttering assistant with a little dry humor.
 
 ## Core User Flow
@@ -37,6 +38,7 @@ Build a Plasmo + React + TypeScript extension with:
 11. User can use Topic Groups to read 1-2 strong links and summarize or discard the rest.
 12. User can export local links to JSON and import them back with URL dedupe.
 13. User can tune decision preferences from the dashboard.
+14. User can seed demo data and confirm the project is ready for a clean walkthrough.
 
 ## Page Types
 
@@ -84,6 +86,7 @@ Build a Plasmo + React + TypeScript extension with:
 - `src/core/analyze.ts`: orchestration for analysis result.
 - `src/core/dashboard.ts`: search, sort, batch update, and weekly cleanup helpers.
 - `src/core/demo-data.ts`: development seed links.
+- `src/core/demo-readiness.ts`: demo coverage checks for content types, statuses, Review Mode, Topic Groups, and issue badges.
 - `src/core/import-export.ts`: versioned JSON export/import parsing and dedupe helpers.
 - `src/core/review.ts`: Review Mode queue, decision mapping, and session summary helpers.
 - `src/core/topics.ts`: local topic clustering and read/summarize/discard suggestions.
@@ -152,6 +155,7 @@ Dashboard:
 - Link issue badges surface high debt, low confidence, and hard-to-read pages.
 - Topic Groups cluster unresolved links by known topic rules, tags, and host fallback.
 - Topic recommendations choose up to 2 high-value links to read and route the rest to summary or discard.
+- Demo readiness checks confirm the current dataset covers showcase content types, workflow statuses, Review Mode material, Topic Groups, and issue badge examples.
 - Weekly cleanup stats include saved this week, high debt, suggested discard, worth reading, and probably not important.
 - Probably Not Important means unresolved links older than 30 days.
 - Import/export uses schema version `1` and deduplicates imported links by URL while preserving existing local identity.
@@ -191,7 +195,9 @@ Settings:
 - Dashboard can tune decision preferences and popup analysis uses the same settings.
 - Dashboard can run Review Mode and summarize the cleanup session.
 - Dashboard can show Topic Groups and apply read, summarize, or discard actions to suggested links.
+- Dashboard can seed a showcase dataset and surface whether it is ready for screenshots or walkthroughs.
 - Popup can undo a just-saved link.
 - Popup can warn when extraction quality is low.
 - Popup can save corrected type, confidence, extraction quality, note, and tags.
 - No AI API is required.
+- `npm.cmd run verify` passes before handoff.

@@ -1,6 +1,7 @@
 import type { SavedLink } from "../types/link"
 
 const now = "2026-06-24T00:00:00.000Z"
+const old = "2026-05-04T00:00:00.000Z"
 
 function reason(message: string) {
   return {
@@ -33,6 +34,43 @@ export function createDemoLinks(): SavedLink[] {
     },
     {
       id: crypto.randomUUID(),
+      url: "https://example.com/ai-agent-memory-patterns",
+      title: "AI Agent Memory Patterns Worth Keeping",
+      textSample: "A practical article comparing short-term memory, retrieval, and project context.",
+      createdAt: now,
+      updatedAt: now,
+      readingTimeMinutes: 11,
+      type: "Long Article",
+      suggestedAction: "Save for Later",
+      chosenAction: "Save for Later",
+      status: "inbox",
+      debtScore: 76,
+      reasons: [reason("It overlaps with other AI agent links, so one strong read is enough.")],
+      tags: ["ai", "agents"],
+      note: "Compare with the complete guide before reading both.",
+      extractionQuality: "high",
+      confidence: 80
+    },
+    {
+      id: crypto.randomUUID(),
+      url: "https://news.example.com/ai-agent-launch-roundup",
+      title: "Latest AI Agent Launch Roundup",
+      textSample: "A short roundup of this week's agent product launches.",
+      createdAt: old,
+      updatedAt: old,
+      readingTimeMinutes: 2,
+      type: "News",
+      suggestedAction: "Summarize",
+      chosenAction: "Summarize",
+      status: "inbox",
+      debtScore: 36,
+      reasons: [reason("Old news is a strong candidate for summary or deletion.")],
+      tags: ["ai", "news"],
+      extractionQuality: "medium",
+      confidence: 84
+    },
+    {
+      id: crypto.randomUUID(),
       url: "https://tools.example.com/json-to-ts",
       title: "JSON to TypeScript Converter",
       textSample: "Paste JSON and generate TypeScript types.",
@@ -49,6 +87,44 @@ export function createDemoLinks(): SavedLink[] {
       note: "Use this when I need JSON converted into TypeScript types.",
       extractionQuality: "medium",
       confidence: 78
+    },
+    {
+      id: crypto.randomUUID(),
+      url: "https://tools.example.com/readme-generator",
+      title: "README Generator for Portfolio Projects",
+      textSample: "Generate structured README files from project metadata.",
+      createdAt: now,
+      updatedAt: now,
+      readingTimeMinutes: 1,
+      type: "Tool",
+      suggestedAction: "Add to Toolbox",
+      chosenAction: "Add to Toolbox",
+      status: "toolbox",
+      debtScore: 12,
+      reasons: [reason("Tool pages are useful when labeled by purpose.")],
+      tags: ["tools", "portfolio"],
+      note: "Use before packaging internship projects.",
+      extractionQuality: "high",
+      confidence: 86
+    },
+    {
+      id: crypto.randomUUID(),
+      url: "https://docs.example.com/chrome-extension-storage",
+      title: "Chrome Extension Storage API Docs",
+      textSample: "Reference documentation for storage quotas, sync behavior, and local storage.",
+      createdAt: now,
+      updatedAt: now,
+      readingTimeMinutes: 9,
+      type: "Docs",
+      suggestedAction: "Turn into Task",
+      chosenAction: "Turn into Task",
+      status: "task",
+      debtScore: 61,
+      reasons: [reason("Docs are best converted into a concrete implementation task.")],
+      tags: ["docs", "extension"],
+      note: "Check quotas before adding heavier local data.",
+      extractionQuality: "high",
+      confidence: 88
     },
     {
       id: crypto.randomUUID(),
@@ -71,6 +147,79 @@ export function createDemoLinks(): SavedLink[] {
     },
     {
       id: crypto.randomUUID(),
+      url: "https://youtube.com/watch?v=agent-review-demo",
+      title: "Building AI Agents Without Creating a Link Graveyard",
+      textSample: "Video transcript about agent workflows and curation habits.",
+      createdAt: now,
+      updatedAt: now,
+      readingTimeMinutes: 7,
+      type: "Video",
+      suggestedAction: "Summarize",
+      chosenAction: "Summarize",
+      status: "summary_queue",
+      debtScore: 58,
+      reasons: [reason("Video content usually needs a summary checkpoint before deep attention.")],
+      tags: ["ai", "agents", "video"],
+      extractionQuality: "low",
+      confidence: 43
+    },
+    {
+      id: crypto.randomUUID(),
+      url: "https://shop.example.com/noise-cancelling-headphones",
+      title: "Noise Cancelling Headphones Deal",
+      textSample: "A product page with reviews, specs, pricing, and recommended accessories.",
+      createdAt: old,
+      updatedAt: old,
+      readingTimeMinutes: 4,
+      type: "Shopping",
+      suggestedAction: "Discard",
+      chosenAction: "Discard",
+      status: "discarded",
+      debtScore: 0,
+      reasons: [reason("Shopping pages become stale fast unless they are an active purchase.")],
+      tags: ["shopping"],
+      extractionQuality: "medium",
+      confidence: 81
+    },
+    {
+      id: crypto.randomUUID(),
+      url: "https://careers.example.com/frontend-internship-checklist",
+      title: "Frontend Internship Search Checklist",
+      textSample: "A concise checklist for resumes, portfolios, referrals, and weekly applications.",
+      createdAt: now,
+      updatedAt: now,
+      readingTimeMinutes: 4,
+      type: "Short Article",
+      suggestedAction: "Read Now",
+      chosenAction: "Read Now",
+      status: "done",
+      debtScore: 18,
+      reasons: [reason("Short useful content should be handled immediately.")],
+      tags: ["job search", "internship"],
+      note: "Already converted into weekly application tasks.",
+      extractionQuality: "high",
+      confidence: 79
+    },
+    {
+      id: crypto.randomUUID(),
+      url: "https://jobs.example.com/interview-practice",
+      title: "Frontend Interview Practice Plan",
+      textSample: "A practice plan covering JavaScript, React, accessibility, and project storytelling.",
+      createdAt: now,
+      updatedAt: now,
+      readingTimeMinutes: 10,
+      type: "Long Article",
+      suggestedAction: "Save for Later",
+      chosenAction: "Save for Later",
+      status: "reading_this_week",
+      debtScore: 67,
+      reasons: [reason("Career material is worth reading when tied to a weekly goal.")],
+      tags: ["job search", "interview"],
+      extractionQuality: "high",
+      confidence: 77
+    },
+    {
+      id: crypto.randomUUID(),
       url: "https://news.example.com/latest-ai-update",
       title: "Latest AI Funding News",
       textSample: "Today a company announced something newsworthy.",
@@ -89,4 +238,3 @@ export function createDemoLinks(): SavedLink[] {
     }
   ]
 }
-

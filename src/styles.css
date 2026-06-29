@@ -83,6 +83,7 @@ h2 {
 .stats-grid > div,
 .cleanup-panel,
 .preferences-panel,
+.readiness-panel,
 .review-panel,
 .topic-panel,
 .toolbar {
@@ -133,6 +134,50 @@ h2 {
 .review-panel {
   margin-bottom: 16px;
   padding: 14px;
+}
+
+.readiness-panel {
+  margin-bottom: 16px;
+  padding: 14px;
+}
+
+.readiness-panel-header {
+  align-items: center;
+  display: flex;
+  gap: 14px;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.readiness-grid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.readiness-check {
+  background: #fff6dc;
+  border: 1px solid #ead8a9;
+  border-radius: 8px;
+  display: grid;
+  gap: 5px;
+  padding: 10px;
+}
+
+.readiness-check strong {
+  color: #3a332b;
+  font-size: 13px;
+}
+
+.readiness-check span {
+  color: #706b62;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.readiness-pass {
+  background: #ecf8dd;
+  border-color: #cfe8b3;
 }
 
 .review-panel-header,
@@ -524,6 +569,7 @@ textarea {
   }
 
   .dashboard-header,
+  .readiness-panel-header,
   .review-panel-header,
   .review-card,
   .review-complete,
@@ -533,6 +579,7 @@ textarea {
   }
 
   .dashboard-header,
+  .readiness-panel-header,
   .review-panel-header,
   .review-card,
   .review-complete,
@@ -545,6 +592,7 @@ textarea {
   .cleanup-panel,
   .preferences-panel,
   .toolbar,
+  .readiness-grid,
   .review-actions,
   .topic-grid,
   .topic-actions,
@@ -558,6 +606,7 @@ textarea {
   .stats-grid,
   .metric-grid,
   .cleanup-panel,
+  .readiness-grid,
   .review-actions,
   .topic-grid,
   .topic-actions,
