@@ -12,7 +12,15 @@ import {
 } from "../core/dashboard"
 import { createDemoLinks } from "../core/demo-data"
 import { createExportPayload, parseImportPayload } from "../core/import-export"
+import {
+  applyReviewDecision,
+  createReviewSummary,
+  getReviewQueue,
+  type ReviewDecision,
+  type ReviewEvent
+} from "../core/review"
 import { DEFAULT_SETTINGS, sanitizeSettings, type UserSettings } from "../core/settings"
+import { getTopicClusters, type TopicCluster } from "../core/topics"
 import { clearDiscarded, deleteLink, getLinks, replaceLinks, saveLink, updateLink } from "../storage/links"
 import { getSettings, saveSettings } from "../storage/settings"
 import type { LinkStatus, SavedLink } from "../types/link"
@@ -58,6 +66,8 @@ function Dashboard() {
   const [notice, setNotice] = useState("")
   const [settings, setSettings] = useState<UserSettings>(DEFAULT_SETTINGS)
   const [settingsDraft, setSettingsDraft] = useState<UserSettings>(DEFAULT_SETTINGS)
+  const [reviewModeOpen, setReviewModeOpen] = useState(false)
+  const [reviewEvents, setReviewEvents] = useState<ReviewEvent[]>([])
   const fileInputRef = useRef<HTMLInputElement | null>(null)
 
   async function refreshLinks() {
@@ -92,6 +102,14 @@ function Dashboard() {
     }
   }, [links])
   const weeklyStats = useMemo(() => getWeeklyCleanupStats(links, new Date(), settings), [links, settings])
+  const reviewedLinkIds = useMemo(() => reviewEvents.map((event) => event.linkId), [reviewEvents])
+  const reviewQueue = useMemo(
+    () => getReviewQueue(links, new Date(), settings, reviewedLinkIds),
+    [links, settings, reviewedLinkIds]
+  )
+  const currentReviewLink = reviewQueue[0]
+  const reviewSummary = useMemo(() => createReviewSummary(reviewEvents), [reviewEvents])
+  const topicClusters = useMemo(() => getTopicClusters(links).slice(0, 4), [links])
 
   async function setStatus(id: string, status: LinkStatus) {
     await updateLink(id, { status })
@@ -192,6 +210,45 @@ function Dashboard() {
     }))
   }
 
+  async function applyReview(decision: ReviewDecision) {
+    if (!currentReviewLink) return
+
+    const updatedLink = applyReviewDecision(currentReviewLink, decision)
+    await updateLink(updatedLink.id, {
+      status: updatedLink.status,
+      updatedAt: updatedLink.updatedAt
+    })
+    setReviewEvents((currentEvents) => [
+      ...currentEvents,
+      {
+        linkId: currentReviewLink.id,
+        decision,
+        previousDebtScore: currentReviewLink.debtScore
+      }
+    ])
+    await refreshLinks()
+  }
+
+  function resetReviewSession() {
+    setReviewEvents([])
+    setReviewModeOpen(true)
+  }
+
+  async function applyTopicAction(cluster: TopicCluster, action: "read" | "summarize" | "discard") {
+    const ids =
+      action === "read"
+        ? cluster.suggestedReadIds
+        : action === "summarize"
+          ? cluster.suggestedSummaryIds
+          : cluster.suggestedDiscardIds
+    const status: LinkStatus =
+      action === "read" ? "reading_this_week" : action === "summarize" ? "summary_queue" : "discarded"
+
+    await Promise.all(ids.map((id) => updateLink(id, { status })))
+    setNotice(`${cluster.label}: ${ids.length} links moved.`)
+    await refreshLinks()
+  }
+
   return (
     <main className="dashboard-shell">
       <header className="dashboard-header">
@@ -223,6 +280,112 @@ function Dashboard() {
           <strong>{stats.discarded}</strong>
         </div>
       </section>
+
+      <section className="review-panel">
+        <div className="review-panel-header">
+          <div>
+            <p className="eyebrow">Review Mode</p>
+            <h2>One link at a time. Less queue, less guilt.</h2>
+          </div>
+          <button className="primary-button" onClick={resetReviewSession} type="button">
+            {reviewModeOpen ? "Restart review" : "Start review"}
+          </button>
+        </div>
+
+        {reviewModeOpen && currentReviewLink && (
+          <article className="review-card">
+            <div>
+              <h3>{currentReviewLink.title}</h3>
+              <p>{hostFromUrl(currentReviewLink.url)}</p>
+              <div className="tag-row">
+                <span>{currentReviewLink.type}</span>
+                <span>{currentReviewLink.readingTimeMinutes} min</span>
+                <span>{currentReviewLink.debtScore}/100 debt</span>
+                <span>{statusLabels[currentReviewLink.status]}</span>
+              </div>
+            </div>
+            <div className="review-actions">
+              <button className="primary-button" onClick={() => applyReview("keep")} type="button">
+                Keep this week
+              </button>
+              <button className="ghost-button" onClick={() => applyReview("summarize")} type="button">
+                Summarize
+              </button>
+              <button className="ghost-button" onClick={() => applyReview("task")} type="button">
+                Turn task
+              </button>
+              <button className="ghost-button" onClick={() => applyReview("later")} type="button">
+                Later
+              </button>
+              <button className="danger-button" onClick={() => applyReview("discard")} type="button">
+                Discard
+              </button>
+            </div>
+          </article>
+        )}
+
+        {reviewModeOpen && !currentReviewLink && (
+          <div className="review-complete">
+            <strong>Review complete.</strong>
+            <span>
+              Reviewed {reviewSummary.reviewed}, discarded {reviewSummary.discarded}, summarized{" "}
+              {reviewSummary.summarized}, tasked {reviewSummary.tasked}, debt reduced by{" "}
+              {reviewSummary.debtReduced}.
+            </span>
+          </div>
+        )}
+      </section>
+
+      {topicClusters.length > 0 && (
+        <section className="topic-panel">
+          <div className="topic-panel-header">
+            <div>
+              <p className="eyebrow">Topic Groups</p>
+              <h2>You may not need every link in the pile.</h2>
+            </div>
+          </div>
+          <div className="topic-grid">
+            {topicClusters.map((cluster) => (
+              <article className="topic-card" key={cluster.id}>
+                <div>
+                  <h3>{cluster.label}</h3>
+                  <p>
+                    {cluster.links.length} links. {cluster.recommendation}
+                  </p>
+                  <div className="topic-link-list">
+                    {cluster.links.slice(0, 3).map((link) => (
+                      <span key={link.id}>{link.title}</span>
+                    ))}
+                  </div>
+                </div>
+                <div className="topic-actions">
+                  <button
+                    className="primary-button"
+                    disabled={cluster.suggestedReadIds.length === 0}
+                    onClick={() => applyTopicAction(cluster, "read")}
+                    type="button">
+                    Read picks
+                  </button>
+                  <button
+                    className="ghost-button"
+                    disabled={cluster.suggestedSummaryIds.length === 0}
+                    onClick={() => applyTopicAction(cluster, "summarize")}
+                    type="button">
+                    Summarize rest
+                  </button>
+                  <button
+                    className="danger-button"
+                    disabled={cluster.suggestedDiscardIds.length === 0}
+                    onClick={() => applyTopicAction(cluster, "discard")}
+                    type="button">
+                    Discard rest
+                  </button>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+      )}
 
       <section className="cleanup-panel">
         <div>
@@ -380,6 +543,11 @@ function Dashboard() {
                   {typeof link.confidence === "number" && <span>{link.confidence}% confidence</span>}
                   {link.extractionQuality && <span>{link.extractionQuality} extraction</span>}
                   <span>{statusLabels[link.status]}</span>
+                </div>
+                <div className="issue-row">
+                  {link.debtScore >= 70 && <span className="issue-badge issue-high">High debt</span>}
+                  {(link.confidence ?? 100) < 50 && <span className="issue-badge">Low confidence</span>}
+                  {link.extractionQuality === "low" && <span className="issue-badge">Hard to read</span>}
                 </div>
                 <div className="inline-edit-grid">
                   <label>

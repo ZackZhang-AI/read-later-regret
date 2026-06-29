@@ -13,8 +13,11 @@ Build a Plasmo + React + TypeScript extension with:
 - Rule-based reading time, page type classification, recommendation, and information debt score.
 - Extraction metadata and classification confidence so users can see how reliable the judgment is.
 - Manual type correction, tags, and one-sentence notes before saving.
+- Post-save popup actions for opening dashboard, undoing the save, or continuing.
 - Local persistence through `chrome.storage.local`.
 - Dashboard page for reviewing, searching, sorting, batch-managing, and annotating saved links.
+- Dashboard Review Mode for processing the queue one link at a time.
+- Topic Groups for local clustering by title, tags, host, and keywords.
 - JSON import/export for backups and demos.
 - User preferences for reading speed, long-article threshold, and stale-link age.
 - Lightweight UI voice: an information decluttering assistant with a little dry humor.
@@ -28,9 +31,12 @@ Build a Plasmo + React + TypeScript extension with:
 5. User can correct the type, add a note, and add tags.
 6. User chooses an action.
 7. Extension saves the link locally with a derived status.
-8. User opens dashboard to filter, search, sort, batch update, annotate, open, delete, or clear links.
-9. User can export local links to JSON and import them back with URL dedupe.
-10. User can tune decision preferences from the dashboard.
+8. User can open the dashboard, undo the save, or continue browsing.
+9. User opens dashboard to filter, search, sort, batch update, annotate, open, delete, or clear links.
+10. User can run Review Mode to process one link at a time.
+11. User can use Topic Groups to read 1-2 strong links and summarize or discard the rest.
+12. User can export local links to JSON and import them back with URL dedupe.
+13. User can tune decision preferences from the dashboard.
 
 ## Page Types
 
@@ -79,6 +85,8 @@ Build a Plasmo + React + TypeScript extension with:
 - `src/core/dashboard.ts`: search, sort, batch update, and weekly cleanup helpers.
 - `src/core/demo-data.ts`: development seed links.
 - `src/core/import-export.ts`: versioned JSON export/import parsing and dedupe helpers.
+- `src/core/review.ts`: Review Mode queue, decision mapping, and session summary helpers.
+- `src/core/topics.ts`: local topic clustering and read/summarize/discard suggestions.
 - `src/core/settings.ts`: default and sanitized user decision preferences.
 - `src/storage/links.ts`: `chrome.storage.local` wrapper.
 - `src/storage/settings.ts`: `chrome.storage.local` wrapper for preferences.
@@ -138,6 +146,12 @@ Dashboard:
 - Search covers title, URL, host, type, status, note, and tags.
 - Sort options are debt score, saved time, and reading time.
 - Batch actions support discard, done, and summary queue.
+- Review Mode prioritizes unresolved links by debt, stale status, and age.
+- Review decisions map to this week, summary queue, task, inbox, or discarded.
+- Review session summary reports reviewed count and reduced debt.
+- Link issue badges surface high debt, low confidence, and hard-to-read pages.
+- Topic Groups cluster unresolved links by known topic rules, tags, and host fallback.
+- Topic recommendations choose up to 2 high-value links to read and route the rest to summary or discard.
 - Weekly cleanup stats include saved this week, high debt, suggested discard, worth reading, and probably not important.
 - Probably Not Important means unresolved links older than 30 days.
 - Import/export uses schema version `1` and deduplicates imported links by URL while preserving existing local identity.
@@ -175,6 +189,9 @@ Settings:
 - Dashboard can search, sort, batch update, and edit notes/tags.
 - Dashboard can export/import JSON and surface old unresolved links.
 - Dashboard can tune decision preferences and popup analysis uses the same settings.
+- Dashboard can run Review Mode and summarize the cleanup session.
+- Dashboard can show Topic Groups and apply read, summarize, or discard actions to suggested links.
+- Popup can undo a just-saved link.
 - Popup can warn when extraction quality is low.
 - Popup can save corrected type, confidence, extraction quality, note, and tags.
 - No AI API is required.

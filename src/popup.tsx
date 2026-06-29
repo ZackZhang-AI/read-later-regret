@@ -5,7 +5,7 @@ import "./styles.css"
 import { analyzePage } from "./core/analyze"
 import { createSavedLink } from "./core/create-link"
 import { DEFAULT_SETTINGS, type UserSettings } from "./core/settings"
-import { saveLink } from "./storage/links"
+import { deleteLink, saveLink } from "./storage/links"
 import { getSettings } from "./storage/settings"
 import type { AnalysisResult, LinkAction, LinkType, PagePayload } from "./types/link"
 
@@ -64,6 +64,7 @@ function App() {
   const [note, setNote] = useState("")
   const [tagsInput, setTagsInput] = useState("")
   const [settings, setSettings] = useState<UserSettings>(DEFAULT_SETTINGS)
+  const [savedLinkId, setSavedLinkId] = useState("")
 
   useEffect(() => {
     Promise.all([extractCurrentPage(), getSettings()])
@@ -109,7 +110,8 @@ function App() {
       userCorrectedType: correctedType || undefined,
       settings
     })
-    await saveLink(link)
+    const savedLink = await saveLink(link)
+    setSavedLinkId(savedLink.id)
     setSavingAction(null)
 
     if (action === "Discard") {
@@ -123,6 +125,14 @@ function App() {
 
   function openDashboard() {
     chrome.tabs.create({ url: chrome.runtime.getURL("tabs/dashboard.html") })
+  }
+
+  async function undoSave() {
+    if (!savedLinkId) return
+
+    await deleteLink(savedLinkId)
+    setSavedLinkId("")
+    setNotice("Undone. The future has one fewer obligation.")
   }
 
   return (
@@ -171,9 +181,10 @@ function App() {
             <p className="warning-box">This page was hard to read. The judgment may be fuzzy.</p>
           )}
 
-          <div className="recommendation">
+          <div className="decision-banner">
             <span>Suggested</span>
             <strong>{analysis.suggestedAction}</strong>
+            <small>{analysis.reasons[0]?.message}</small>
           </div>
 
           <label className="field-label">
@@ -227,7 +238,24 @@ function App() {
             ))}
           </div>
 
-          {notice && <p className="notice">{notice}</p>}
+          {notice && (
+            <div className="post-save-panel">
+              <p className="notice">{notice}</p>
+              {savedLinkId && (
+                <div className="post-save-actions">
+                  <button className="primary-button" onClick={openDashboard} type="button">
+                    Open dashboard
+                  </button>
+                  <button className="ghost-button" onClick={undoSave} type="button">
+                    Undo
+                  </button>
+                  <button className="ghost-button" onClick={() => setNotice("")} type="button">
+                    Keep browsing
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
         </section>
       )}
     </main>
