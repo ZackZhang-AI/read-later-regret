@@ -2,6 +2,7 @@ import type { LinkStatus, LinkType, SavedLink } from "../types/link"
 
 import { getReviewQueue } from "./review"
 import { getTopicClusters } from "./topics"
+import { getUsageStats } from "./usage-intelligence"
 
 export interface DemoReadinessCheck {
   id: string
@@ -44,6 +45,7 @@ export function getDemoReadiness(links: SavedLink[]): DemoReadiness {
   const missingStatuses = showcaseStatuses.filter((status) => !statusSet.has(status))
   const reviewQueueCount = getReviewQueue(links).length
   const topicClusterCount = getTopicClusters(links).length
+  const usageStats = getUsageStats(links)
   const hasHighDebt = links.some((link) => link.debtScore >= 70 && link.status !== "discarded")
   const hasLowConfidence = links.some((link) => (link.confidence ?? 100) < 50)
   const hasLowExtraction = links.some((link) => link.extractionQuality === "low")
@@ -78,6 +80,20 @@ export function getDemoReadiness(links: SavedLink[]): DemoReadiness {
       label: "Topic Group material",
       passed: topicClusterCount >= 2,
       detail: `${topicClusterCount} local clusters detected.`
+    },
+    {
+      id: "usage-intelligence",
+      label: "Usage Intelligence material",
+      passed:
+        usageStats.openedThisWeek > 0 &&
+        usageStats.neverOpened > 0 &&
+        usageStats.highDebtNeverOpened > 0,
+      detail:
+        usageStats.openedThisWeek > 0 &&
+        usageStats.neverOpened > 0 &&
+        usageStats.highDebtNeverOpened > 0
+          ? "Opened, never-opened, and high-debt unopened examples are present."
+          : "Needs opened, never-opened, and high-debt unopened examples."
     },
     {
       id: "issue-badges",

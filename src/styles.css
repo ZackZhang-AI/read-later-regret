@@ -86,6 +86,7 @@ h2 {
 .readiness-panel,
 .review-panel,
 .topic-panel,
+.usage-panel,
 .toolbar {
   background: #fffdf8;
   border: 1px solid #e7decd;
@@ -110,7 +111,8 @@ h2 {
 
 .metric-grid,
 .stats-grid,
-.cleanup-panel {
+.cleanup-panel,
+.usage-panel {
   display: grid;
   gap: 10px;
 }
@@ -457,6 +459,12 @@ textarea {
   padding: 10px;
 }
 
+.usage-panel {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-bottom: 16px;
+  padding: 10px;
+}
+
 .toolbar {
   display: grid;
   gap: 10px;
@@ -592,6 +600,7 @@ textarea {
   .cleanup-panel,
   .preferences-panel,
   .toolbar,
+  .usage-panel,
   .readiness-grid,
   .review-actions,
   .topic-grid,
@@ -606,6 +615,7 @@ textarea {
   .stats-grid,
   .metric-grid,
   .cleanup-panel,
+  .usage-panel,
   .readiness-grid,
   .review-actions,
   .topic-grid,

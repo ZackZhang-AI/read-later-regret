@@ -5,7 +5,8 @@ import "./styles.css"
 import { analyzePage } from "./core/analyze"
 import { createSavedLink } from "./core/create-link"
 import { DEFAULT_SETTINGS, type UserSettings } from "./core/settings"
-import { deleteLink, saveLink } from "./storage/links"
+import { getDuplicateSaveWarning, type DuplicateSaveWarning } from "./core/usage-intelligence"
+import { deleteLink, getLinks, saveLink } from "./storage/links"
 import { getSettings } from "./storage/settings"
 import type { AnalysisResult, LinkAction, LinkType, PagePayload } from "./types/link"
 
@@ -65,12 +66,14 @@ function App() {
   const [tagsInput, setTagsInput] = useState("")
   const [settings, setSettings] = useState<UserSettings>(DEFAULT_SETTINGS)
   const [savedLinkId, setSavedLinkId] = useState("")
+  const [duplicateWarning, setDuplicateWarning] = useState<DuplicateSaveWarning | null>(null)
 
   useEffect(() => {
-    Promise.all([extractCurrentPage(), getSettings()])
-      .then(([page, storedSettings]) => {
+    Promise.all([extractCurrentPage(), getSettings(), getLinks()])
+      .then(([page, storedSettings, storedLinks]) => {
         setSettings(storedSettings)
         setState({ status: "ready", page })
+        setDuplicateWarning(getDuplicateSaveWarning(page, storedLinks, "Unknown"))
       })
       .catch(() =>
         setState({
@@ -87,6 +90,14 @@ function App() {
       settings
     })
   }, [correctedType, settings, state])
+
+  useEffect(() => {
+    if (!analysis || state.status !== "ready") return
+
+    getLinks().then((storedLinks) => {
+      setDuplicateWarning(getDuplicateSaveWarning(state.page, storedLinks, analysis.type))
+    })
+  }, [analysis, state])
 
   useEffect(() => {
     if (!analysis || note) return
@@ -186,6 +197,10 @@ function App() {
             <strong>{analysis.suggestedAction}</strong>
             <small>{analysis.reasons[0]?.message}</small>
           </div>
+
+          {duplicateWarning && (
+            <p className="warning-box">{duplicateWarning.message}</p>
+          )}
 
           <label className="field-label">
             Correct type if needed

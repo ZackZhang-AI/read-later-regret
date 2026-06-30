@@ -57,6 +57,16 @@ export async function updateLink(id: string, patch: Partial<SavedLink>): Promise
   return updated
 }
 
+export async function markLinkOpened(
+  id: string,
+  openedAt = new Date().toISOString()
+): Promise<SavedLink | null> {
+  return updateLink(id, {
+    lastOpenedAt: openedAt,
+    updatedAt: openedAt
+  })
+}
+
 export async function deleteLink(id: string): Promise<void> {
   const links = await getLinks()
   await setLinks(links.filter((link) => link.id !== id))

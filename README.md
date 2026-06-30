@@ -37,6 +37,8 @@ The product voice is lightweight and a little candid: you are not short on conte
 - Dashboard search, sort, filtering, batch actions, tags, notes, and weekly cleanup stats.
 - Dashboard Review Mode for clearing one link at a time.
 - Topic Groups that cluster related links and suggest reading only the best few.
+- Usage Intelligence that records opened links and surfaces never-opened, recently opened, stale unopened, and high-debt unopened links.
+- Popup duplicate-topic warning before saving another similar unresolved link.
 - Link issue badges for high debt, low confidence, and hard-to-read pages.
 - Demo readiness checks for content coverage, workflow coverage, Review Mode, Topic Groups, and issue badges.
 - Dashboard "Probably Not Important" view for old unresolved links.
@@ -53,6 +55,7 @@ The product voice is lightweight and a little candid: you are not short on conte
 - `src/core/`: pure rule, extraction, analysis, dashboard, import/export, and demo-data helpers.
 - `src/core/review.ts`: Review Mode queue, decision mapping, and session summary helpers.
 - `src/core/topics.ts`: local topic clustering and read/summarize/discard suggestions.
+- `src/core/usage-intelligence.ts`: local open-behavior stats, usage badges, and duplicate-save warnings.
 - `src/core/demo-readiness.ts`: showcase coverage checks for demo and screenshot readiness.
 - `src/storage/settings.ts`: local settings persistence for user decision preferences.
 - `src/storage/links.ts`: local storage wrapper.
@@ -129,6 +132,8 @@ docs/demo-checklist.md
 - Click "Add demo links" and confirm the Demo readiness checks are green.
 - Start Review Mode and process links one by one with keep, summarize, task, later, and discard decisions.
 - Use Topic Groups to read the strongest 1-2 links and summarize or discard the rest.
+- Open links from the dashboard and confirm opened-this-week stats and usage badges update.
+- Try saving a page similar to existing AI Agent demo links and confirm the duplicate-topic warning appears.
 - Save a link from the popup, then try undo and open dashboard.
 - Export saved links, then import the JSON and confirm URL dedupe keeps one record per URL.
 - Click the "Probably not important" cleanup stat after seeding or importing old links.

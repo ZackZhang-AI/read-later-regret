@@ -86,7 +86,8 @@ export function createDemoLinks(): SavedLink[] {
       tags: ["dev", "json"],
       note: "Use this when I need JSON converted into TypeScript types.",
       extractionQuality: "medium",
-      confidence: 78
+      confidence: 78,
+      lastOpenedAt: "2026-06-29T00:00:00.000Z"
     },
     {
       id: crypto.randomUUID(),
@@ -124,7 +125,8 @@ export function createDemoLinks(): SavedLink[] {
       tags: ["docs", "extension"],
       note: "Check quotas before adding heavier local data.",
       extractionQuality: "high",
-      confidence: 88
+      confidence: 88,
+      lastOpenedAt: "2026-06-28T00:00:00.000Z"
     },
     {
       id: crypto.randomUUID(),
@@ -198,7 +200,8 @@ export function createDemoLinks(): SavedLink[] {
       tags: ["job search", "internship"],
       note: "Already converted into weekly application tasks.",
       extractionQuality: "high",
-      confidence: 79
+      confidence: 79,
+      lastOpenedAt: "2026-06-25T00:00:00.000Z"
     },
     {
       id: crypto.randomUUID(),

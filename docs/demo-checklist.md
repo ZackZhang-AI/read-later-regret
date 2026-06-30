@@ -19,6 +19,7 @@ Use this checklist before recording a walkthrough, taking screenshots, or sharin
    - Workflow status coverage.
    - Review Mode material.
    - Topic Group material.
+   - Usage Intelligence material.
    - Issue badge examples.
 
 ## Capture The Core Story
@@ -29,7 +30,10 @@ Use this checklist before recording a walkthrough, taking screenshots, or sharin
 4. Dashboard shows weekly cleanup stats and the Demo readiness panel.
 5. Review Mode processes one link at a time and ends with a cleanup summary.
 6. Topic Groups recommend reading only the strongest links and routing the rest.
-7. Search, sort, batch actions, tags, notes, import, and export all remain available.
+7. Usage Intelligence shows opened-this-week, never-opened, stale unopened, and high-debt unopened counts.
+8. Opening a link from the dashboard updates `lastOpenedAt` and the opened-recently badge.
+9. Popup warns before saving another page similar to an existing unresolved topic.
+10. Search, sort, batch actions, tags, notes, import, and export all remain available.
 
 ## Screenshot List
 
@@ -39,4 +43,5 @@ Use this checklist before recording a walkthrough, taking screenshots, or sharin
 - Review Mode active card.
 - Review Mode completion summary.
 - Topic Groups recommendations.
+- Usage Intelligence stats and behavior filters.
 - Link list with high debt, low confidence, and hard-to-read badges.

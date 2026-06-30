@@ -18,6 +18,7 @@ Build a Plasmo + React + TypeScript extension with:
 - Dashboard page for reviewing, searching, sorting, batch-managing, and annotating saved links.
 - Dashboard Review Mode for processing the queue one link at a time.
 - Topic Groups for local clustering by title, tags, host, and keywords.
+- Usage Intelligence for tracking opened links, never-opened debt, stale unopened links, and duplicate-topic saves.
 - JSON import/export for backups and demos.
 - User preferences for reading speed, long-article threshold, and stale-link age.
 - Demo readiness checks and a walkthrough checklist for screenshots, portfolio review, and local handoff.
@@ -36,9 +37,12 @@ Build a Plasmo + React + TypeScript extension with:
 9. User opens dashboard to filter, search, sort, batch update, annotate, open, delete, or clear links.
 10. User can run Review Mode to process one link at a time.
 11. User can use Topic Groups to read 1-2 strong links and summarize or discard the rest.
-12. User can export local links to JSON and import them back with URL dedupe.
-13. User can tune decision preferences from the dashboard.
-14. User can seed demo data and confirm the project is ready for a clean walkthrough.
+12. User can open a link from the dashboard, which records `lastOpenedAt`.
+13. User can inspect opened-this-week, never-opened, stale unopened, and high-debt unopened links.
+14. User sees a duplicate-topic warning before saving another similar unresolved link.
+15. User can export local links to JSON and import them back with URL dedupe.
+16. User can tune decision preferences from the dashboard.
+17. User can seed demo data and confirm the project is ready for a clean walkthrough.
 
 ## Page Types
 
@@ -90,6 +94,7 @@ Build a Plasmo + React + TypeScript extension with:
 - `src/core/import-export.ts`: versioned JSON export/import parsing and dedupe helpers.
 - `src/core/review.ts`: Review Mode queue, decision mapping, and session summary helpers.
 - `src/core/topics.ts`: local topic clustering and read/summarize/discard suggestions.
+- `src/core/usage-intelligence.ts`: usage stats, link usage signals, and duplicate-save warnings.
 - `src/core/settings.ts`: default and sanitized user decision preferences.
 - `src/storage/links.ts`: `chrome.storage.local` wrapper.
 - `src/storage/settings.ts`: `chrome.storage.local` wrapper for preferences.
@@ -153,6 +158,7 @@ Dashboard:
 - Review decisions map to this week, summary queue, task, inbox, or discarded.
 - Review session summary reports reviewed count and reduced debt.
 - Link issue badges surface high debt, low confidence, and hard-to-read pages.
+- Usage issue badges surface never opened, opened recently, and stale unopened links.
 - Topic Groups cluster unresolved links by known topic rules, tags, and host fallback.
 - Topic recommendations choose up to 2 high-value links to read and route the rest to summary or discard.
 - Demo readiness checks confirm the current dataset covers showcase content types, workflow statuses, Review Mode material, Topic Groups, and issue badge examples.
@@ -195,6 +201,8 @@ Settings:
 - Dashboard can tune decision preferences and popup analysis uses the same settings.
 - Dashboard can run Review Mode and summarize the cleanup session.
 - Dashboard can show Topic Groups and apply read, summarize, or discard actions to suggested links.
+- Dashboard can record link opens and filter by recent, never-opened, stale unopened, and high-debt unopened behavior.
+- Popup can warn when the current page resembles multiple existing unresolved links.
 - Dashboard can seed a showcase dataset and surface whether it is ready for screenshots or walkthroughs.
 - Popup can undo a just-saved link.
 - Popup can warn when extraction quality is low.

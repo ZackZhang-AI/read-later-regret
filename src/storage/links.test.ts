@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 
 import type { SavedLink } from "../types/link"
 
-import { clearDiscarded, deleteLink, getLinks, saveLink, updateLink } from "./links"
+import { clearDiscarded, deleteLink, getLinks, markLinkOpened, saveLink, updateLink } from "./links"
 
 const sampleLink: SavedLink = {
   id: "one",
@@ -86,5 +86,16 @@ describe("links storage", () => {
     await clearDiscarded()
 
     expect(await getLinks()).toEqual([sampleLink])
+  })
+
+  it("records when a saved link is opened", async () => {
+    await saveLink(sampleLink)
+
+    await markLinkOpened("one", "2026-06-30T00:00:00.000Z")
+
+    expect((await getLinks())[0]).toMatchObject({
+      id: "one",
+      lastOpenedAt: "2026-06-30T00:00:00.000Z"
+    })
   })
 })

@@ -22,7 +22,8 @@ import {
 } from "../core/review"
 import { DEFAULT_SETTINGS, sanitizeSettings, type UserSettings } from "../core/settings"
 import { getTopicClusters, type TopicCluster } from "../core/topics"
-import { clearDiscarded, deleteLink, getLinks, replaceLinks, saveLink, updateLink } from "../storage/links"
+import { getLinkUsageSignals, getUsageStats } from "../core/usage-intelligence"
+import { clearDiscarded, deleteLink, getLinks, markLinkOpened, replaceLinks, saveLink, updateLink } from "../storage/links"
 import { getSettings, saveSettings } from "../storage/settings"
 import type { LinkStatus, SavedLink } from "../types/link"
 
@@ -37,10 +38,16 @@ const filters: Array<LinkStatus | "all"> = [
 ]
 
 type DashboardFilter = LinkStatus | "all" | "probably_not_important"
+type UsageFilter = "never_opened" | "opened_recently" | "stale_never_opened" | "high_debt_never_opened"
+type LinkFilter = DashboardFilter | UsageFilter
 
-const statusLabels: Record<DashboardFilter, string> = {
+const statusLabels: Record<LinkFilter, string> = {
   all: "All",
   probably_not_important: "Probably not important",
+  never_opened: "Never opened",
+  opened_recently: "Opened recently",
+  stale_never_opened: "Stale unopened",
+  high_debt_never_opened: "High debt unopened",
   inbox: "Inbox",
   reading_this_week: "This week",
   summary_queue: "Summary",
@@ -60,7 +67,7 @@ function hostFromUrl(url: string): string {
 
 function Dashboard() {
   const [links, setLinks] = useState<SavedLink[]>([])
-  const [filter, setFilter] = useState<DashboardFilter>("all")
+  const [filter, setFilter] = useState<LinkFilter>("all")
   const [query, setQuery] = useState("")
   const [sort, setSort] = useState<DashboardSort>("debt")
   const [selectedIds, setSelectedIds] = useState<string[]>([])
@@ -90,7 +97,15 @@ function Dashboard() {
         ? links
         : filter === "probably_not_important"
           ? probablyNotImportantLinks
-          : links.filter((link) => link.status === filter)
+          : filter === "never_opened"
+            ? links.filter((link) => getLinkUsageSignals(link).neverOpened)
+            : filter === "opened_recently"
+              ? links.filter((link) => getLinkUsageSignals(link).openedRecently)
+              : filter === "stale_never_opened"
+                ? links.filter((link) => getLinkUsageSignals(link).staleNeverOpened)
+                : filter === "high_debt_never_opened"
+                  ? links.filter((link) => getLinkUsageSignals(link).highDebtNeverOpened)
+                  : links.filter((link) => link.status === filter)
     return sortLinks(filterLinks(statusFilteredLinks, query), sort)
   }, [filter, links, query, settings, sort])
 
@@ -103,6 +118,7 @@ function Dashboard() {
     }
   }, [links])
   const weeklyStats = useMemo(() => getWeeklyCleanupStats(links, new Date(), settings), [links, settings])
+  const usageStats = useMemo(() => getUsageStats(links, new Date()), [links])
   const reviewedLinkIds = useMemo(() => reviewEvents.map((event) => event.linkId), [reviewEvents])
   const reviewQueue = useMemo(
     () => getReviewQueue(links, new Date(), settings, reviewedLinkIds),
@@ -121,6 +137,12 @@ function Dashboard() {
   async function removeLink(id: string) {
     await deleteLink(id)
     await refreshLinks()
+  }
+
+  async function openLink(link: SavedLink) {
+    await markLinkOpened(link.id)
+    await refreshLinks()
+    chrome.tabs.create({ url: link.url })
   }
 
   async function removeDiscarded() {
@@ -437,6 +459,25 @@ function Dashboard() {
         </button>
       </section>
 
+      <section className="usage-panel">
+        <button className="cleanup-stat-button" onClick={() => setFilter("opened_recently")} type="button">
+          <span>Opened this week</span>
+          <strong>{usageStats.openedThisWeek}</strong>
+        </button>
+        <button className="cleanup-stat-button" onClick={() => setFilter("never_opened")} type="button">
+          <span>Never opened</span>
+          <strong>{usageStats.neverOpened}</strong>
+        </button>
+        <button className="cleanup-stat-button" onClick={() => setFilter("high_debt_never_opened")} type="button">
+          <span>High debt unopened</span>
+          <strong>{usageStats.highDebtNeverOpened}</strong>
+        </button>
+        <button className="cleanup-stat-button" onClick={() => setFilter("stale_never_opened")} type="button">
+          <span>Stale unopened</span>
+          <strong>{usageStats.staleNeverOpened}</strong>
+        </button>
+      </section>
+
       <section className="preferences-panel" aria-label="Decision preferences">
         <label>
           English WPM
@@ -572,6 +613,9 @@ function Dashboard() {
                   {link.debtScore >= 70 && <span className="issue-badge issue-high">High debt</span>}
                   {(link.confidence ?? 100) < 50 && <span className="issue-badge">Low confidence</span>}
                   {link.extractionQuality === "low" && <span className="issue-badge">Hard to read</span>}
+                  {getLinkUsageSignals(link).neverOpened && <span className="issue-badge">Never opened</span>}
+                  {getLinkUsageSignals(link).openedRecently && <span className="issue-badge">Opened recently</span>}
+                  {getLinkUsageSignals(link).staleNeverOpened && <span className="issue-badge issue-high">Stale</span>}
                 </div>
                 <div className="inline-edit-grid">
                   <label>
@@ -594,7 +638,7 @@ function Dashboard() {
               </div>
 
               <div className="row-actions">
-                <button className="ghost-button" onClick={() => chrome.tabs.create({ url: link.url })} type="button">
+                <button className="ghost-button" onClick={() => openLink(link)} type="button">
                   Open
                 </button>
                 <button className="ghost-button" onClick={() => setStatus(link.id, "done")} type="button">

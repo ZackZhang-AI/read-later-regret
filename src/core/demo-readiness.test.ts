@@ -15,6 +15,7 @@ describe("demo readiness", () => {
         expect.objectContaining({ id: "workflow-statuses", passed: true }),
         expect.objectContaining({ id: "review-queue", passed: true }),
         expect.objectContaining({ id: "topic-clusters", passed: true }),
+        expect.objectContaining({ id: "usage-intelligence", passed: true }),
         expect.objectContaining({ id: "issue-badges", passed: true })
       ])
     )
