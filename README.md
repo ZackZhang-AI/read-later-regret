@@ -1,20 +1,43 @@
-# Read-Later Regret
+# Read-Later Regret 稍后再看反悔系统
 
-Read-Later Regret is a Chrome extension for reducing information debt. It is not another endless read-later bucket. When you click the extension, it evaluates the current page and asks the more honest question: should this be read now, scheduled, summarized, turned into a task, kept as a resource, or discarded?
+Read-Later Regret 是一个 Chrome 浏览器扩展，用来减少「信息债」。它不是又一个无限堆积的稍后阅读箱，而是在你保存网页前先帮你判断：这篇内容值得现在读、稍后读、总结、转成任务、放进工具箱，还是干脆丢掉。
 
-## Why It Exists
+项目的核心想法很简单：不是每个被收藏的链接都真的值得进入你的未来。
 
-Traditional read-later tools assume saved means useful. In practice, many saved links become a quiet backlog. Read-Later Regret routes links by intent:
+## 为什么做这个
 
-- Long articles become scheduled reading candidates.
-- Short posts are nudged toward reading now.
-- Tools go to a toolbox.
-- Docs can become tasks.
-- News and low-value pages can be summarized or discarded.
+传统稍后阅读工具通常默认「保存 = 有价值」。但现实里，很多链接只是变成一个安静膨胀的待办坟场。
 
-The product voice is lightweight and a little candid: you are not short on content, you are short on deleting courage.
+Read-Later Regret 会根据当前页面内容、阅读时长、页面类型、历史保存情况和信息债分数，给出更诚实的处理建议：
 
-## Tech Stack
+- 短内容：提醒你现在读完，不要制造新债务。
+- 长文章：进入稍后阅读队列。
+- 文档：根据任务倾向转成待办。
+- 工具页：放进工具箱。
+- 新闻、购物、低价值页面：建议总结或丢弃。
+- 相似主题反复保存：提醒你已经囤了不少同类链接。
+
+## 功能亮点
+
+- Popup 一键分析当前页面。
+- 内容脚本提取网页标题、URL 和可读文本。
+- 支持英文、中文和混合内容的阅读时间估算。
+- 基于规则的页面类型识别，包含置信度和判断理由。
+- 信息债分数，范围为 `0-100`。
+- 保存前可手动修正内容类型、添加标签和一句话备注。
+- 保存后支持打开仪表盘、撤销保存或继续浏览。
+- 本地持久化存储，使用 `chrome.storage.local`，不依赖后端。
+- 仪表盘支持搜索、排序、筛选、批量处理、编辑备注和标签。
+- Review Mode：一次处理一个链接，适合清理积压。
+- Topic Groups：按主题聚合同类链接，建议只读最值得读的几篇。
+- Usage Intelligence：统计最近打开、从未打开、长期未打开、高债未打开等状态。
+- 保存相似未处理链接前给出重复主题提醒。
+- 支持 JSON 导入/导出，方便备份和演示。
+- 支持阅读速度、长文章阈值、陈旧链接天数等偏好设置。
+- 内置演示数据和 Demo readiness 检查，便于作品集展示。
+- 不需要任何 AI API。
+
+## 技术栈
 
 - Plasmo
 - React
@@ -23,129 +46,106 @@ The product voice is lightweight and a little candid: you are not short on conte
 - `chrome.storage.local`
 - Vitest
 
-## Features
+## 项目结构
 
-- Popup analysis of the current page.
-- Multi-strategy page text extraction with extraction quality metadata.
-- Reading time estimate for English, Chinese, and mixed content.
-- Rule-based content classification with confidence score.
-- Structured reasons for classifications, recommendations, and debt scoring.
-- Information debt score from `0-100`.
-- Manual type correction before saving.
-- Quick note and tags from the popup.
-- Post-save next steps in the popup, including dashboard jump and undo.
-- Dashboard search, sort, filtering, batch actions, tags, notes, and weekly cleanup stats.
-- Dashboard Review Mode for clearing one link at a time.
-- Topic Groups that cluster related links and suggest reading only the best few.
-- Usage Intelligence that records opened links and surfaces never-opened, recently opened, stale unopened, and high-debt unopened links.
-- Popup duplicate-topic warning before saving another similar unresolved link.
-- Link issue badges for high debt, low confidence, and hard-to-read pages.
-- Demo readiness checks for content coverage, workflow coverage, Review Mode, Topic Groups, and issue badges.
-- Dashboard "Probably Not Important" view for old unresolved links.
-- JSON export/import for local backups and demos, with URL dedupe on import.
-- User preferences for reading speed, long-article threshold, and stale-link age.
-- Development-only demo seed data from the dashboard empty state.
-- No AI API required.
+```text
+src/
+  background.ts              扩展后台入口
+  popup.tsx                  弹窗分析与保存流程
+  styles.css                 共享样式
+  contents/
+    extract.ts               网页可读文本提取
+  core/
+    analyze.ts               页面分析编排
+    classifier.ts            页面类型分类规则
+    debt-score.ts            信息债评分
+    reading-time.ts          阅读时间估算
+    recommendation.ts        处理建议与状态映射
+    dashboard.ts             仪表盘搜索、排序、批量操作
+    review.ts                Review Mode 队列与总结
+    topics.ts                本地主题聚类
+    usage-intelligence.ts    使用行为统计与重复保存提醒
+    import-export.ts         JSON 导入导出
+    settings.ts              用户偏好设置
+    demo-data.ts             演示数据
+    demo-readiness.ts        演示完整度检查
+  storage/
+    links.ts                 链接本地存储封装
+    settings.ts              设置本地存储封装
+  tabs/
+    dashboard.tsx            仪表盘页面
+  types/
+    link.ts                  共享数据模型
+```
 
-## Project Structure
+## 本地开发
 
-- `src/popup.tsx`: popup UI and current-page save flow.
-- `src/contents/extract.ts`: content script for readable text and extraction metadata.
-- `src/tabs/dashboard.tsx`: dashboard management UI.
-- `src/core/`: pure rule, extraction, analysis, dashboard, import/export, and demo-data helpers.
-- `src/core/review.ts`: Review Mode queue, decision mapping, and session summary helpers.
-- `src/core/topics.ts`: local topic clustering and read/summarize/discard suggestions.
-- `src/core/usage-intelligence.ts`: local open-behavior stats, usage badges, and duplicate-save warnings.
-- `src/core/demo-readiness.ts`: showcase coverage checks for demo and screenshot readiness.
-- `src/storage/settings.ts`: local settings persistence for user decision preferences.
-- `src/storage/links.ts`: local storage wrapper.
-- `src/types/link.ts`: shared data model.
-- `agent.md`: durable agent brief for future implementation sessions.
-
-## Local Development
-
-Install dependencies:
+安装依赖：
 
 ```bash
 npm.cmd install
 ```
 
-Run the extension in development:
+启动开发模式：
 
 ```bash
 npm.cmd run dev
 ```
 
-Build the Chrome extension:
+构建 Chrome 扩展：
 
 ```bash
 npm.cmd run build
 ```
 
-Load the built extension in Chrome:
+在 Chrome 中加载扩展：
 
-1. Open `chrome://extensions`.
-2. Enable Developer Mode.
-3. Click "Load unpacked".
-4. Select `build/chrome-mv3-prod`.
+1. 打开 `chrome://extensions`。
+2. 开启右上角的 Developer Mode。
+3. 点击 Load unpacked。
+4. 选择 `build/chrome-mv3-prod`。
 
-## Verification
+## 验证命令
 
-Run all tests:
+运行测试：
 
 ```bash
 npm.cmd test
 ```
 
-Run TypeScript checks:
+运行 TypeScript 检查：
 
 ```bash
 npm.cmd run typecheck
 ```
 
-Run production build:
+运行生产构建：
 
 ```bash
 npm.cmd run build
 ```
 
-Run the full verification suite:
+运行完整验证：
 
 ```bash
 npm.cmd run verify
 ```
 
-Prepare a walkthrough:
+## 演示建议
 
-```bash
-docs/demo-checklist.md
-```
+适合作品集演示的流程：
 
-## Manual Demo Checklist
+1. 打开一篇长文章，确认系统建议稍后阅读。
+2. 打开一篇短内容，确认系统建议现在读完。
+3. 打开一个工具页，保存到工具箱并添加备注。
+4. 打开文档页，确认可转成任务。
+5. 保存多条链接后进入仪表盘，演示搜索、排序、筛选和批量处理。
+6. 使用 Review Mode 逐条清理队列。
+7. 使用 Topic Groups 聚合同类链接，只保留最值得读的几条。
+8. 打开仪表盘中的链接，确认 Usage Intelligence 状态更新。
+9. 导出 JSON，再导入并确认 URL 去重正常。
+10. 调整偏好设置，观察长文章阈值和陈旧链接判断变化。
 
-- Open a long article and confirm it recommends scheduled reading.
-- Open a short post and confirm it nudges toward reading now.
-- Open a tool page and confirm it can be saved to toolbox with a usage note.
-- Open docs and confirm it can become a task.
-- Open a video, shopping page, paper, and news page to verify type classification.
-- Save several links, then use dashboard search, sort, filter, batch discard, batch done, and batch summarize.
-- Click "Add demo links" and confirm the Demo readiness checks are green.
-- Start Review Mode and process links one by one with keep, summarize, task, later, and discard decisions.
-- Use Topic Groups to read the strongest 1-2 links and summarize or discard the rest.
-- Open links from the dashboard and confirm opened-this-week stats and usage badges update.
-- Try saving a page similar to existing AI Agent demo links and confirm the duplicate-topic warning appears.
-- Save a link from the popup, then try undo and open dashboard.
-- Export saved links, then import the JSON and confirm URL dedupe keeps one record per URL.
-- Click the "Probably not important" cleanup stat after seeding or importing old links.
-- Change decision preferences in the dashboard and confirm long-article/stale-link behavior updates.
-- Edit tags and notes in the dashboard.
-- Test a hard-to-read page and confirm low extraction quality warning appears.
+## 当前状态
 
-## Screenshots
-
-Add screenshots here after loading the extension locally:
-
-- Popup analysis state.
-- Popup low-confidence or low-extraction-quality state.
-- Dashboard with sample links.
-- Dashboard batch cleanup workflow.
+这是一个本地优先的 MVP：规则引擎、弹窗分析、仪表盘管理、导入导出、演示数据和测试覆盖已经搭好。它更像一个「信息整理助手」，帮用户在保存之前先做一次小小的反悔。
