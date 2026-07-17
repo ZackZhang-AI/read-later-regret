@@ -17,10 +17,15 @@ describe("estimateReadingTime", () => {
     expect(estimateReadingTime(text).minutes).toBe(2)
   })
 
+  it("uses custom reading speed settings", () => {
+    const text = Array.from({ length: 300 }, (_, index) => `word${index}`).join(" ")
+
+    expect(estimateReadingTime(text, { englishWordsPerMinute: 100 }).minutes).toBe(3)
+  })
+
   it("estimates Chinese reading time from CJK characters", () => {
     const text = "信息".repeat(450)
 
     expect(estimateReadingTime(text).minutes).toBe(2)
   })
 })
-

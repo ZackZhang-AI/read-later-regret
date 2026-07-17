@@ -80,7 +80,14 @@ h2 {
 .analysis-card,
 .empty-state,
 .link-row,
-.stats-grid > div {
+.stats-grid > div,
+.cleanup-panel,
+.preferences-panel,
+.readiness-panel,
+.review-panel,
+.topic-panel,
+.usage-panel,
+.toolbar {
   background: #fffdf8;
   border: 1px solid #e7decd;
   border-radius: 8px;
@@ -103,9 +110,170 @@ h2 {
 }
 
 .metric-grid,
-.stats-grid {
+.stats-grid,
+.cleanup-panel,
+.usage-panel {
   display: grid;
   gap: 10px;
+}
+
+.preferences-panel {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-bottom: 16px;
+  padding: 12px;
+}
+
+.preferences-panel label {
+  color: #5f5648;
+  display: grid;
+  font-size: 12px;
+  font-weight: 700;
+  gap: 5px;
+}
+
+.review-panel {
+  margin-bottom: 16px;
+  padding: 14px;
+}
+
+.readiness-panel {
+  margin-bottom: 16px;
+  padding: 14px;
+}
+
+.readiness-panel-header {
+  align-items: center;
+  display: flex;
+  gap: 14px;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.readiness-grid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.readiness-check {
+  background: #fff6dc;
+  border: 1px solid #ead8a9;
+  border-radius: 8px;
+  display: grid;
+  gap: 5px;
+  padding: 10px;
+}
+
+.readiness-check strong {
+  color: #3a332b;
+  font-size: 13px;
+}
+
+.readiness-check span {
+  color: #706b62;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.readiness-pass {
+  background: #ecf8dd;
+  border-color: #cfe8b3;
+}
+
+.review-panel-header,
+.review-card,
+.review-complete {
+  align-items: center;
+  display: flex;
+  gap: 14px;
+  justify-content: space-between;
+}
+
+.review-panel h2,
+.review-card h3 {
+  margin-bottom: 4px;
+}
+
+.review-card {
+  background: #f4efe5;
+  border-radius: 8px;
+  margin-top: 12px;
+  padding: 12px;
+}
+
+.review-card p {
+  color: #706b62;
+  margin-bottom: 8px;
+  overflow-wrap: anywhere;
+}
+
+.review-actions {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(5, minmax(90px, auto));
+}
+
+.review-complete {
+  background: #e7f8cf;
+  border-radius: 8px;
+  margin-top: 12px;
+  padding: 12px;
+}
+
+.topic-panel {
+  margin-bottom: 16px;
+  padding: 14px;
+}
+
+.topic-panel-header {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+}
+
+.topic-grid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 12px;
+}
+
+.topic-card {
+  background: #f4efe5;
+  border-radius: 8px;
+  display: grid;
+  gap: 12px;
+  padding: 12px;
+}
+
+.topic-card h3 {
+  margin-bottom: 4px;
+}
+
+.topic-card p {
+  color: #706b62;
+  margin-bottom: 8px;
+}
+
+.topic-link-list {
+  display: grid;
+  gap: 4px;
+}
+
+.topic-link-list span {
+  color: #4b443b;
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.topic-actions {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .metric-grid {
@@ -119,7 +287,9 @@ h2 {
 
 .metric-grid div,
 .stats-grid div,
-.recommendation {
+.cleanup-panel div,
+.recommendation,
+.decision-banner {
   background: #f4efe5;
   border-radius: 8px;
   padding: 10px;
@@ -127,7 +297,9 @@ h2 {
 
 .metric-grid span,
 .stats-grid span,
-.recommendation span {
+.cleanup-panel span,
+.recommendation span,
+.decision-banner span {
   color: #756a57;
   display: block;
   font-size: 12px;
@@ -136,9 +308,32 @@ h2 {
 
 .metric-grid strong,
 .stats-grid strong,
-.recommendation strong {
+.cleanup-panel strong,
+.recommendation strong,
+.decision-banner strong {
   display: block;
   font-size: 17px;
+}
+
+.decision-banner {
+  background: #1f1b16;
+  color: #fffaf0;
+  margin-top: 12px;
+}
+
+.decision-banner span,
+.decision-banner small {
+  color: #d8ff7a;
+}
+
+.decision-banner strong {
+  font-size: 22px;
+  margin-bottom: 4px;
+}
+
+.decision-banner small {
+  display: block;
+  line-height: 1.35;
 }
 
 .metric-grid small {
@@ -157,6 +352,41 @@ h2 {
   font-size: 13px;
   margin: 12px 0;
   padding-left: 18px;
+}
+
+.warning-box {
+  background: #fff2bf;
+  border-radius: 8px;
+  color: #5a4300;
+  font-size: 13px;
+  margin: 10px 0;
+  padding: 10px;
+}
+
+.field-label,
+.inline-edit-grid label {
+  color: #5f5648;
+  display: grid;
+  font-size: 12px;
+  font-weight: 700;
+  gap: 5px;
+  margin-top: 10px;
+}
+
+input,
+select,
+textarea {
+  background: #fffefa;
+  border: 1px solid #d8cfbe;
+  border-radius: 8px;
+  color: #1f1b16;
+  font: inherit;
+  padding: 9px 10px;
+  width: 100%;
+}
+
+textarea {
+  resize: vertical;
 }
 
 .action-grid {
@@ -203,6 +433,13 @@ h2 {
   padding: 10px;
 }
 
+.post-save-actions {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: 1fr 1fr 1fr;
+  margin-top: 8px;
+}
+
 .error-box {
   background: #ffe0d6;
   border-radius: 8px;
@@ -216,6 +453,45 @@ h2 {
   margin-bottom: 16px;
 }
 
+.cleanup-panel {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  margin-bottom: 16px;
+  padding: 10px;
+}
+
+.usage-panel {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-bottom: 16px;
+  padding: 10px;
+}
+
+.toolbar {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: minmax(180px, 1fr) 170px repeat(5, auto);
+  margin-bottom: 16px;
+  padding: 12px;
+}
+
+.cleanup-stat-button {
+  background: #f4efe5;
+  color: #1f1b16;
+  text-align: left;
+}
+
+.cleanup-stat-button:hover {
+  background: #eae0cf;
+}
+
+.visually-hidden {
+  height: 1px;
+  opacity: 0;
+  overflow: hidden;
+  pointer-events: none;
+  position: absolute;
+  width: 1px;
+}
+
 .link-list {
   display: grid;
   gap: 10px;
@@ -225,8 +501,17 @@ h2 {
   align-items: center;
   display: grid;
   gap: 16px;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   padding: 14px;
+}
+
+.select-box {
+  align-self: start;
+  margin-top: 5px;
+}
+
+.select-box input {
+  width: auto;
 }
 
 .link-main h2 {
@@ -252,6 +537,34 @@ h2 {
   padding: 4px 8px;
 }
 
+.issue-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.issue-badge {
+  background: #fff2bf;
+  border-radius: 999px;
+  color: #5a4300;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 8px;
+}
+
+.issue-high {
+  background: #f5d3c8;
+  color: #5a1e12;
+}
+
+.inline-edit-grid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  margin-top: 10px;
+}
+
 .empty-state {
   color: #706b62;
   padding: 28px;
@@ -264,19 +577,50 @@ h2 {
   }
 
   .dashboard-header,
+  .readiness-panel-header,
+  .review-panel-header,
+  .review-card,
+  .review-complete,
   .link-row {
     align-items: stretch;
     grid-template-columns: 1fr;
   }
 
   .dashboard-header,
+  .readiness-panel-header,
+  .review-panel-header,
+  .review-card,
+  .review-complete,
   .row-actions {
     flex-direction: column;
   }
 
   .stats-grid,
-  .metric-grid {
+  .metric-grid,
+  .cleanup-panel,
+  .preferences-panel,
+  .toolbar,
+  .usage-panel,
+  .readiness-grid,
+  .review-actions,
+  .topic-grid,
+  .topic-actions,
+  .inline-edit-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
+@media (max-width: 540px) {
+  .toolbar,
+  .stats-grid,
+  .metric-grid,
+  .cleanup-panel,
+  .usage-panel,
+  .readiness-grid,
+  .review-actions,
+  .topic-grid,
+  .topic-actions,
+  .inline-edit-grid {
+    grid-template-columns: 1fr;
+  }
+}

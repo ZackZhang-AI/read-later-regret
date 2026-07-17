@@ -26,20 +26,32 @@ export type LinkStatus =
   | "discarded"
   | "done"
 
+export type ExtractionQuality = "high" | "medium" | "low"
+
+export interface AnalysisReason {
+  reasonCode: string
+  message: string
+  weight: number
+}
+
 export interface PagePayload {
   url: string
   title: string
   text: string
   hasVideo?: boolean
   interactiveElementCount?: number
+  extractionQuality?: ExtractionQuality
+  textLength?: number
+  selectedRoot?: string
 }
 
 export interface AnalysisResult {
   type: LinkType
+  confidence: number
   readingTimeMinutes: number
   suggestedAction: LinkAction
   debtScore: number
-  reasons: string[]
+  reasons: AnalysisReason[]
 }
 
 export interface SavedLink {
@@ -56,8 +68,10 @@ export interface SavedLink {
   chosenAction: LinkAction
   status: LinkStatus
   debtScore: number
-  reasons: string[]
+  reasons: AnalysisReason[]
   tags: string[]
   note?: string
+  extractionQuality?: ExtractionQuality
+  confidence?: number
+  userCorrectedType?: LinkType
 }
-

@@ -1,10 +1,25 @@
-import type { LinkAction, PagePayload, SavedLink } from "../types/link"
+import type { LinkAction, LinkType, PagePayload, SavedLink } from "../types/link"
 
 import { analyzePage } from "./analyze"
 import { actionToStatus } from "./recommendation"
+import type { PartialUserSettings } from "./settings"
 
-export function createSavedLink(page: PagePayload, chosenAction: LinkAction): SavedLink {
-  const analysis = analyzePage(page)
+export interface CreateSavedLinkOptions {
+  note?: string
+  tags?: string[]
+  userCorrectedType?: LinkType
+  settings?: PartialUserSettings
+}
+
+export function createSavedLink(
+  page: PagePayload,
+  chosenAction: LinkAction,
+  options: CreateSavedLinkOptions = {}
+): SavedLink {
+  const analysis = analyzePage(page, {
+    userCorrectedType: options.userCorrectedType,
+    settings: options.settings
+  })
   const now = new Date().toISOString()
 
   return {
@@ -21,7 +36,10 @@ export function createSavedLink(page: PagePayload, chosenAction: LinkAction): Sa
     status: actionToStatus(chosenAction),
     debtScore: chosenAction === "Discard" ? 0 : analysis.debtScore,
     reasons: analysis.reasons,
-    tags: []
+    tags: options.tags ?? [],
+    note: options.note,
+    extractionQuality: page.extractionQuality,
+    confidence: analysis.confidence,
+    userCorrectedType: options.userCorrectedType
   }
 }
-

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest"
 
 import { analyzePage } from "./analyze"
+import { classifyPage } from "./classifier"
 import { scoreInformationDebt } from "./debt-score"
 import { actionToStatus, recommendAction } from "./recommendation"
 
@@ -16,6 +17,23 @@ describe("analyzePage", () => {
     expect(result.readingTimeMinutes).toBe(10)
     expect(result.suggestedAction).toBe("Save for Later")
     expect(result.debtScore).toBeGreaterThanOrEqual(60)
+  })
+
+  it("uses custom long article threshold during analysis", () => {
+    const result = analyzePage(
+      {
+        url: "https://example.com/five-minute-read",
+        title: "A focused article",
+        text: Array.from({ length: 1100 }, (_, index) => `word${index}`).join(" ")
+      },
+      {
+        settings: {
+          longArticleMinutes: 5
+        }
+      }
+    )
+
+    expect(result.type).toBe("Long Article")
   })
 
   it("classifies quick articles and recommends reading now", () => {
@@ -100,6 +118,27 @@ describe("recommendAction", () => {
   })
 })
 
+describe("classifyPage", () => {
+  it("returns stronger confidence for high-signal pages than unknown pages", () => {
+    const video = classifyPage({
+      url: "https://www.youtube.com/watch?v=abc",
+      title: "Watch this",
+      text: "Video"
+    })
+    const unknown = classifyPage({
+      url: "https://example.com/blank",
+      title: "",
+      text: ""
+    })
+
+    expect(video.confidence).toBeGreaterThan(unknown.confidence)
+    expect(video.reasons[0]).toMatchObject({
+      reasonCode: "video_signal",
+      weight: 40
+    })
+  })
+})
+
 describe("scoreInformationDebt", () => {
   it("returns zero for discarded links", () => {
     expect(
@@ -127,4 +166,3 @@ describe("scoreInformationDebt", () => {
     expect(result.reasons.length).toBeGreaterThan(3)
   })
 })
-

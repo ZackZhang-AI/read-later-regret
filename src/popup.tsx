@@ -4,8 +4,11 @@ import "./styles.css"
 
 import { analyzePage } from "./core/analyze"
 import { createSavedLink } from "./core/create-link"
-import { saveLink } from "./storage/links"
-import type { AnalysisResult, LinkAction, PagePayload } from "./types/link"
+import { DEFAULT_SETTINGS, type UserSettings } from "./core/settings"
+import { getDuplicateSaveWarning, type DuplicateSaveWarning } from "./core/usage-intelligence"
+import { deleteLink, getLinks, saveLink } from "./storage/links"
+import { getSettings } from "./storage/settings"
+import type { AnalysisResult, LinkAction, LinkType, PagePayload } from "./types/link"
 
 const actions: LinkAction[] = [
   "Read Now",
@@ -14,6 +17,18 @@ const actions: LinkAction[] = [
   "Turn into Task",
   "Add to Toolbox",
   "Discard"
+]
+
+const linkTypes: LinkType[] = [
+  "Long Article",
+  "Short Article",
+  "Tool",
+  "Docs",
+  "Video",
+  "Shopping",
+  "News",
+  "Paper",
+  "Unknown"
 ]
 
 type LoadState =
@@ -46,10 +61,20 @@ function App() {
   const [state, setState] = useState<LoadState>({ status: "loading" })
   const [savingAction, setSavingAction] = useState<LinkAction | null>(null)
   const [notice, setNotice] = useState("")
+  const [correctedType, setCorrectedType] = useState<LinkType | "">("")
+  const [note, setNote] = useState("")
+  const [tagsInput, setTagsInput] = useState("")
+  const [settings, setSettings] = useState<UserSettings>(DEFAULT_SETTINGS)
+  const [savedLinkId, setSavedLinkId] = useState("")
+  const [duplicateWarning, setDuplicateWarning] = useState<DuplicateSaveWarning | null>(null)
 
   useEffect(() => {
-    extractCurrentPage()
-      .then((page) => setState({ status: "ready", page }))
+    Promise.all([extractCurrentPage(), getSettings(), getLinks()])
+      .then(([page, storedSettings, storedLinks]) => {
+        setSettings(storedSettings)
+        setState({ status: "ready", page })
+        setDuplicateWarning(getDuplicateSaveWarning(page, storedLinks, "Unknown"))
+      })
       .catch(() =>
         setState({
           status: "error",
@@ -60,15 +85,44 @@ function App() {
 
   const analysis: AnalysisResult | null = useMemo(() => {
     if (state.status !== "ready") return null
-    return analyzePage(state.page)
-  }, [state])
+    return analyzePage(state.page, {
+      userCorrectedType: correctedType || undefined,
+      settings
+    })
+  }, [correctedType, settings, state])
+
+  useEffect(() => {
+    if (!analysis || state.status !== "ready") return
+
+    getLinks().then((storedLinks) => {
+      setDuplicateWarning(getDuplicateSaveWarning(state.page, storedLinks, analysis.type))
+    })
+  }, [analysis, state])
+
+  useEffect(() => {
+    if (!analysis || note) return
+
+    if (analysis.type === "Tool") {
+      setNote(`Use this when I need ${state.status === "ready" ? state.page.title : "this tool"}.`)
+    }
+  }, [analysis, note, state])
 
   async function handleAction(action: LinkAction) {
     if (state.status !== "ready") return
 
     setSavingAction(action)
-    const link = createSavedLink(state.page, action)
-    await saveLink(link)
+    const tags = tagsInput
+      .split(",")
+      .map((tag) => tag.trim())
+      .filter(Boolean)
+    const link = createSavedLink(state.page, action, {
+      note: note.trim() || undefined,
+      tags,
+      userCorrectedType: correctedType || undefined,
+      settings
+    })
+    const savedLink = await saveLink(link)
+    setSavedLinkId(savedLink.id)
     setSavingAction(null)
 
     if (action === "Discard") {
@@ -82,6 +136,14 @@ function App() {
 
   function openDashboard() {
     chrome.tabs.create({ url: chrome.runtime.getURL("tabs/dashboard.html") })
+  }
+
+  async function undoSave() {
+    if (!savedLinkId) return
+
+    await deleteLink(savedLinkId)
+    setSavedLinkId("")
+    setNotice("Undone. The future has one fewer obligation.")
   }
 
   return (
@@ -115,6 +177,10 @@ function App() {
               <strong>{analysis.readingTimeMinutes} min</strong>
             </div>
             <div>
+              <span>Confidence</span>
+              <strong>{analysis.confidence}%</strong>
+            </div>
+            <div>
               <span>Debt score</span>
               <strong>
                 {analysis.debtScore}/100 <small>{scoreLabel(analysis.debtScore)}</small>
@@ -122,14 +188,55 @@ function App() {
             </div>
           </div>
 
-          <div className="recommendation">
+          {state.page.extractionQuality === "low" && (
+            <p className="warning-box">This page was hard to read. The judgment may be fuzzy.</p>
+          )}
+
+          <div className="decision-banner">
             <span>Suggested</span>
             <strong>{analysis.suggestedAction}</strong>
+            <small>{analysis.reasons[0]?.message}</small>
           </div>
+
+          {duplicateWarning && (
+            <p className="warning-box">{duplicateWarning.message}</p>
+          )}
+
+          <label className="field-label">
+            Correct type if needed
+            <select
+              value={correctedType || analysis.type}
+              onChange={(event) => setCorrectedType(event.target.value as LinkType)}>
+              {linkTypes.map((type) => (
+                <option key={type} value={type}>
+                  {type}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="field-label">
+            Use note
+            <textarea
+              onChange={(event) => setNote(event.target.value)}
+              placeholder="One sentence about why this link matters"
+              rows={2}
+              value={note}
+            />
+          </label>
+
+          <label className="field-label">
+            Tags
+            <input
+              onChange={(event) => setTagsInput(event.target.value)}
+              placeholder="ai, tools, research"
+              value={tagsInput}
+            />
+          </label>
 
           <ul className="reason-list">
             {analysis.reasons.slice(0, 4).map((reason) => (
-              <li key={reason}>{reason}</li>
+              <li key={reason.reasonCode}>{reason.message}</li>
             ))}
           </ul>
 
@@ -146,7 +253,24 @@ function App() {
             ))}
           </div>
 
-          {notice && <p className="notice">{notice}</p>}
+          {notice && (
+            <div className="post-save-panel">
+              <p className="notice">{notice}</p>
+              {savedLinkId && (
+                <div className="post-save-actions">
+                  <button className="primary-button" onClick={openDashboard} type="button">
+                    Open dashboard
+                  </button>
+                  <button className="ghost-button" onClick={undoSave} type="button">
+                    Undo
+                  </button>
+                  <button className="ghost-button" onClick={() => setNotice("")} type="button">
+                    Keep browsing
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
         </section>
       )}
     </main>
@@ -154,4 +278,3 @@ function App() {
 }
 
 export default App
-
