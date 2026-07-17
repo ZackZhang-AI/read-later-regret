@@ -1,7 +1,12 @@
 import type { SavedLink } from "../types/link"
 
-const now = "2026-06-24T00:00:00.000Z"
-const old = "2026-05-04T00:00:00.000Z"
+const now = new Date().toISOString()
+const old = daysAgo(60)
+const recentlyOpened = daysAgo(1)
+
+function daysAgo(days: number): string {
+  return new Date(Date.now() - days * 86_400_000).toISOString()
+}
 
 function reason(message: string) {
   return {
@@ -87,7 +92,7 @@ export function createDemoLinks(): SavedLink[] {
       note: "Use this when I need JSON converted into TypeScript types.",
       extractionQuality: "medium",
       confidence: 78,
-      lastOpenedAt: "2026-06-29T00:00:00.000Z"
+      lastOpenedAt: recentlyOpened
     },
     {
       id: crypto.randomUUID(),
@@ -126,7 +131,7 @@ export function createDemoLinks(): SavedLink[] {
       note: "Check quotas before adding heavier local data.",
       extractionQuality: "high",
       confidence: 88,
-      lastOpenedAt: "2026-06-28T00:00:00.000Z"
+      lastOpenedAt: recentlyOpened
     },
     {
       id: crypto.randomUUID(),
@@ -201,7 +206,7 @@ export function createDemoLinks(): SavedLink[] {
       note: "Already converted into weekly application tasks.",
       extractionQuality: "high",
       confidence: 79,
-      lastOpenedAt: "2026-06-25T00:00:00.000Z"
+      lastOpenedAt: recentlyOpened
     },
     {
       id: crypto.randomUUID(),
