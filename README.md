@@ -4,6 +4,27 @@ Read-Later Regret 是一个 Chrome 浏览器扩展，用来减少「信息债」
 
 项目的核心想法很简单：不是每个被收藏的链接都真的值得进入你的未来。
 
+## 产品预览
+
+<table>
+  <tr>
+    <td width="32%"><img src="docs/images/readme-popup.png" alt="Read-Later Regret 扩展弹窗"></td>
+    <td width="68%"><img src="docs/images/readme-dashboard.png" alt="Read-Later Regret 信息债务仪表盘"></td>
+  </tr>
+  <tr>
+    <td align="center">保存前判断</td>
+    <td align="center">信息债务仪表盘</td>
+  </tr>
+</table>
+
+## 核心流程
+
+1. Popup 读取当前页面的标题、正文、链接和可读性信息。
+2. 本地规则判断内容类型、阅读时间、置信度和信息债分数。
+3. 系统给出“现在读、稍后读、总结、转任务、进工具箱或丢弃”的建议。
+4. 用户可修正类型、补充标签和备注，再决定是否保存。
+5. 仪表盘通过 Review Mode、Topic Groups 和 Usage Intelligence 持续清理积压。
+
 ## 为什么做这个
 
 传统稍后阅读工具通常默认「保存 = 有价值」。但现实里，很多链接只是变成一个安静膨胀的待办坟场。
